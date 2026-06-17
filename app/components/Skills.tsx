@@ -1,20 +1,37 @@
 export default function Skills() {
+  const languages = ['Java', 'Python', 'C++', 'C', 'HTML/CSS', 'JavaScript', 'SQL', 'TypeScript', 'Kotlin']
+  const frameworks = ['Git', 'GitHub', 'Next.js', 'Firebase', 'Tailwind CSS', 'Tkinter', 'Vercel', 'Supabase']
+
   return (
-    <section className="mb-8">
-      <h2 className="text-2xl font-bold mb-4 text-blue-600 dark:text-blue-400">SKILLS</h2>
-      <div className="border-l-4 border-blue-500 pl-4">
-        <div className="mb-4 grid grid-cols-1 gap-4">
-          <div>
-            <p className="font-semibold mb-2">Programming Languages:</p>
-            <p className="text-gray-700 dark:text-gray-300">Java, Python, C++, C, HTML/CSS, JavaScript, SQL, Typescript, Kotlin</p>
+    <section id="skills" className="mb-10 animate-fade-in-up">
+      <div className="flex items-center gap-3 mb-5">
+        <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+          <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Skills</h2>
+      </div>
+      <div className="space-y-5">
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700/50 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Programming Languages</h3>
+          <div className="flex flex-wrap gap-2">
+            {languages.map((skill) => (
+              <span key={skill} className="px-3 py-1.5 text-sm font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-100 dark:border-blue-800/50 hover:scale-105 transition-transform cursor-default">
+                {skill}
+              </span>
+            ))}
           </div>
-          <div>
-            <p className="font-semibold mb-2">Frameworks & Technologies:</p>
-            <p className="text-gray-700 dark:text-gray-300">Git, GitHub, Next.js, Firebase, Tailwind CSS, Tkinter, Vercel, Supabase</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700/50 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Frameworks & Technologies</h3>
+          <div className="flex flex-wrap gap-2">
+            {frameworks.map((skill) => (
+              <span key={skill} className="px-3 py-1.5 text-sm font-medium bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg border border-indigo-100 dark:border-indigo-800/50 hover:scale-105 transition-transform cursor-default">
+                {skill}
+              </span>
+            ))}
           </div>
         </div>
       </div>
-      <div className="border-t border-gray-200 dark:border-gray-700 my-8"></div>
     </section>
   )
 } 

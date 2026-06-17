@@ -5,27 +5,26 @@ import Experience from '@/app/components/Experience'
 import Projects from '@/app/components/Projects'
 import Skills from '@/app/components/Skills'
 import SoftSkills from '@/app/components/SoftSkills'
+import Activities from '@/app/components/Activities'
 
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 relative">
-      {/* Background image with opacity */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center opacity-5 dark:opacity-3 z-0" 
-        style={{ backgroundImage: 'url("/background.avif")' }}
-      ></div>
-      
-      <main className="max-w-4xl mx-auto shadow-lg relative z-10">
+    <div className="min-h-screen py-8 px-4 sm:px-6">
+      <main className="max-w-4xl mx-auto">
         <Header />
-        <div className="px-8 py-12 bg-white dark:bg-gray-800">
+        <div className="mt-8 space-y-2">
           <Objective />
           <Education />
-          <Projects />
-          <Experience />
           <Skills />
+          <Experience />
+          <Projects />
+          <Activities />
           <SoftSkills />
         </div>
+        <footer className="mt-12 text-center text-sm text-gray-400 dark:text-gray-500 pb-8">
+          <p>© {new Date().getFullYear()} Thien An Nguyen. Built with Next.js & Tailwind CSS.</p>
+        </footer>
       </main>
     </div>
   )

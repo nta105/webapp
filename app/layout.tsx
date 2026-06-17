@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Resume | Thien An Nguyen",
+  title: "Thien An Nguyen | Software Engineer",
   description: "Computer Science student portfolio showcasing projects and skills, graduating December 2025",
 };
 
@@ -28,22 +28,16 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <body 
         suppressHydrationWarning
-        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-gray-50 dark:bg-gray-900 relative`}
+        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-gray-50 dark:bg-[#0f1729] text-gray-900 dark:text-gray-100 relative`}
       >
-        <div className="fixed inset-0 opacity-20 dark:opacity-10 z-0">
-          <picture>
-            <source srcSet="/background.avif" type="image/avif" />
-            <img 
-              src="/background.avif" 
-              alt=""
-              className="w-full h-full object-cover"
-            />
-          </picture>
+        {/* Subtle gradient background */}
+        <div className="fixed inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-indigo-50/50 dark:from-blue-950/20 dark:via-transparent dark:to-indigo-950/20"></div>
         </div>
 
         <ThemeProvider>
           <Navbar />
-          <main className="pt-16 relative z-10">
+          <main className="pt-20 relative z-10">
             {children}
           </main>
         </ThemeProvider>
