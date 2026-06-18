@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Thien An Nguyen | Software Engineer",
+  title: "Thien An Nguyen | Associate Engineer, System Applications",
   description: "Computer Science student portfolio showcasing projects and skills, graduating December 2025",
 };
 
@@ -37,8 +37,8 @@ export default function RootLayout({
             alt=""
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gray-950/70 dark:bg-gray-950/85"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-950/30 via-transparent to-indigo-950/40"></div>
+          <div className="absolute inset-0 bg-gray-950/80 dark:bg-gray-950/92"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-950/40 via-transparent to-indigo-950/50"></div>
         </div>
 
         <ThemeProvider>

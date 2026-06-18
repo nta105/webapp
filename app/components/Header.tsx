@@ -11,7 +11,7 @@ export default function Header() {
       <div className="relative p-10 sm:p-16 max-w-3xl mx-auto text-center">
         <div className="mb-4">
           <span className="inline-block px-4 py-1.5 text-xs font-medium tracking-widest uppercase bg-blue-500/20 text-blue-300 rounded-full border border-blue-400/20 mb-6">
-            Software Engineer
+            Associate Engineer, System Applications
           </span>
         </div>
         <h1 className="text-4xl sm:text-6xl font-bold mb-4 tracking-tight text-white">
