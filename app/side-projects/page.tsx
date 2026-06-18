@@ -3,7 +3,7 @@ import Link from 'next/link'
 export default function SideProjects() {
   const projects = [
     {
-      title: '📄 My Resume',
+      title: '📄 My Resume as an Engineer',
       description: 'Professional resume showcasing work experience, education, skills, and projects as an Associate Engineer in System Applications.',
       href: '/resume',
       tags: ['Resume', 'Portfolio', 'Engineering'],

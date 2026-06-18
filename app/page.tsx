@@ -119,9 +119,9 @@ export default function GuitarPage() {
             <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mb-3"></div>
             <p className="text-white/50 text-sm">Watch highlights from my live shows and recordings</p>
           </div>
-          <div className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {videos.map((video) => (
-              <div key={video.id} className={`glass-card rounded-2xl overflow-hidden ${video.featured ? 'ring-1 ring-amber-400/20' : ''}`}>
+              <div key={video.id} className={`glass-card rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all ${video.featured ? 'md:col-span-2' : ''}`}>
                 <div className="relative aspect-video bg-black">
                   {playingVideo === video.id ? (
                     <iframe
@@ -141,16 +141,16 @@ export default function GuitarPage() {
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                        <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <svg className="w-7 h-7 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <div className="w-16 h-16 rounded-full bg-amber-500/80 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-amber-500/20">
+                          <svg className="w-7 h-7 text-black ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         </div>
                       </div>
                     </div>
                   )}
                 </div>
-                <div className="p-5">
-                  <h3 className="text-white font-semibold mb-1">{video.title}</h3>
-                  {video.description && <p className="text-white/50 text-sm">{video.description}</p>}
+                <div className="p-4">
+                  <h3 className="text-white font-semibold text-sm mb-1">{video.title}</h3>
+                  {video.description && <p className="text-white/50 text-xs">{video.description}</p>}
                 </div>
               </div>
             ))}

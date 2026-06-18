@@ -21,12 +21,12 @@ export default function ResumePage() {
         <Header />
         <div className="mt-10 space-y-6">
           <Objective />
-          <Education />
-          <Skills />
           <Experience />
           <Projects />
+          <Education />
           <Activities />
           <SoftSkills />
+          <Skills />
         </div>
         <footer className="mt-16 text-center text-sm text-white/30 pb-8">
           <div className="section-line mb-6"></div>
