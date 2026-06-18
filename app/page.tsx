@@ -13,7 +13,7 @@ export default function Home() {
     <div className="min-h-screen py-8 px-4 sm:px-6">
       <main className="max-w-4xl mx-auto">
         <Header />
-        <div className="mt-8 space-y-2">
+        <div className="mt-10 space-y-6">
           <Objective />
           <Education />
           <Skills />
@@ -22,7 +22,8 @@ export default function Home() {
           <Activities />
           <SoftSkills />
         </div>
-        <footer className="mt-12 text-center text-sm text-gray-400 dark:text-gray-500 pb-8">
+        <footer className="mt-16 text-center text-sm text-white/30 pb-8">
+          <div className="section-line mb-6"></div>
           <p>© {new Date().getFullYear()} Thien An Nguyen. Built with Next.js & Tailwind CSS.</p>
         </footer>
       </main>

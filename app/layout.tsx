@@ -28,11 +28,17 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <body 
         suppressHydrationWarning
-        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-gray-50 dark:bg-[#0f1729] text-gray-900 dark:text-gray-100 relative`}
+        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased text-gray-900 dark:text-gray-100 relative`}
       >
-        {/* Subtle gradient background */}
+        {/* Fixed background image with dark overlay */}
         <div className="fixed inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-indigo-50/50 dark:from-blue-950/20 dark:via-transparent dark:to-indigo-950/20"></div>
+          <img
+            src="/background.avif"
+            alt=""
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gray-950/70 dark:bg-gray-950/85"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-950/30 via-transparent to-indigo-950/40"></div>
         </div>
 
         <ThemeProvider>
