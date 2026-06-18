@@ -6,6 +6,7 @@ import Image from 'next/image'
 
 export default function GuitarPage() {
   const [playingVideo, setPlayingVideo] = useState<string | null>(null)
+  const [lightbox, setLightbox] = useState<string | null>(null)
 
   const videos = [
     {
@@ -172,6 +173,39 @@ export default function GuitarPage() {
           </div>
         </section>
 
+        {/* Gallery Section */}
+        <section id="gallery" className="animate-fade-in-up">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-white mb-3">Gallery</h2>
+            <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mb-3"></div>
+            <p className="text-white/50 text-sm">Moments from performances, collaborations, and events</p>
+          </div>
+          {/* Highlight Grid - masonry columns */}
+          <div className="columns-2 md:columns-3 gap-3 mb-6">
+            {[
+              '0BBA77A7-793D-47B1-A9B4-6A58883C3BAC.JPG',
+              '495579760_30749375237995369_5261623886874235774_n.jpg',
+              '500770185_31024596350473255_864268117096538412_n.jpg',
+              '475161670_594799660138086_2675917611097618161_n.jpg',
+              'IMG_1362.JPG',
+              'Hinh-Thien-An-4.jpg',
+            ].map((img, i) => (
+              <div key={i} className="break-inside-avoid mb-3 relative rounded-xl overflow-hidden group cursor-pointer" onClick={() => setLightbox(`/guitar/gallery/${img}`)}>
+                <img src={`/guitar/gallery/${img}`} alt="Performance photo" className="w-full h-auto block group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-4">
+            <Link href="/side-projects/guitar/gallery" className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 text-white/70 rounded-full font-medium text-sm hover:bg-white/10 hover:text-white transition-all">
+              View More Photos
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </Link>
+          </div>
+        </section>
+
         {/* Support Section */}
         <section id="support" className="animate-fade-in-up">
           <div className="text-center mb-10">
@@ -269,6 +303,14 @@ export default function GuitarPage() {
           <p className="text-white/30 text-sm">&copy; {new Date().getFullYear()} All Rights Reserved.</p>
         </footer>
       </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4" onClick={() => setLightbox(null)}>
+          <button onClick={() => setLightbox(null)} className="absolute top-4 right-4 text-white/70 hover:text-white text-3xl font-light z-10">&times;</button>
+          <img src={lightbox} alt="Gallery photo" className="max-w-full max-h-[90vh] object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
     </div>
   )
 }
