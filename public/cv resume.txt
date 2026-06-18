@@ -1,0 +1,70 @@
+Thien An Nguyen
+San Jose, CA | P: +408 639-3430 | tnguyen554@horizon.csueastbay.edu | github.com/nta105
+EXECUTIVE SUMMARY
+Results-driven Software Engineer with a 3.94 GPA and experience in full-stack development, AI applications, and mobile app
+development. Proficient in software development lifecycle (SDLC), Agile methodologies, REST APIs, and cloud technologies.
+Passionate about AI, automation, and scalable software solutions. Proven ability to design, develop, and deploy web, mobile, and
+desktop applications using Next.js, Firebase, Kotlin, and cloud platforms.
+EDUCATION
+CALIFORNIA STATE UNIVERSITY, EAST BAY
+Hayward, CA
+Bachelor of Science in Computer Science Expected December 2025
+-
+Honors & Awards: Dean’s List (Fall 2023, Spring 2024, Fall 2024), CS Department Scholarship (2023-2024) | GPA: 3.94/4.0
+-
+Relevant coursework: Data Structures & Algorithms, Object-Oriented Programming, Software Engineering, Operating
+Systems, Database Management, Computer Networks, Artificial Intelligence
+-
+Involvement: Google Developer Student Club – Organized events and collaborated on technical projects.
+WORK EXPERIENCE
+EMPOWER SEMICONDUCTOR Milpitas, CA
+Product & Test Engineer May 2026 – Now
+Product & Test Engineering Intern May 2025 – Dec 2025
+-
+Write and Perform IC device testing using C++ scripts on Advantest V93000 with SmartTest, including functional validation
+and non-volatile memory (NVM) programming for production burn-in.
+-
+Develop and deploy a Python-based STDF-to-Excel conversion tool using pandas, openpyxl, and pystdf to streamline analysis
+of semiconductor test data.
+-
+Collaborated closely with test engineers to troubleshoot logs, refine test workflows, and support QA for production and R&D
+units.
+INTUITIVE SURGICAL Sunnyvale, CA
+Technician July 2022 – July 2023
+-
+Assembled precision robotic components for the Da Vinci surgical system and Ion robotic platform, ensuring 100%
+compliance with quality and safety standards.
+-
+Conducted functional testing on 20+ robotic devices per week, reducing defect rates by 15%
+-
+Improved technical documentation & manufacturing workflows, leading to a 10% reduction in errors
+Suggested process automation strategies to improve quality assurance and efficiency
+PROJECTS
+PERSONAL PROJECTS
+AI-Powered Video Content Analyser (https://chat-with-youtubevideo.vercel.app/)
+-
+Developed a full-stack Next.js web app that integrates AI-powered chatbots to analyze YouTube videos
+-
+Implemented REST APIs & Firebase Authentication to allow user-specific analysis storage
+-
+Deployed the platform on Vercel with a scalable serverless architecture
+My Resume & Guitar Websites (https://thienan.vercel.app/, https://nta105.github.io/)
+-
+Designed and deployed a responsive online resume to showcase professional experience, hosted on Vercel for seamless
+accessibility.
+-
+Created a personal website highlighting guitar lessons and performances, deployed using GitHub Pages.
+SKILLS
+-
+-
+-
+Programming Languages: Python, C++, JavaScript, TypeScript, Kotlin, SQL
+Technologies & Tools: Claude, Github copilot, AdvanceTest V93000, Eclipse, Visual Studio Code, Next.js, React, Node.js,
+Firebase, Supabase, Tailwind CSS, Vercel, Git/GitHub, Android Studio, Tkinter
+Databases: MySQL, PostgreSQL, Firestore, Supabase
+SOFT SKILLS
+-
+-
+Collaborated with a team of 5 students in the Google Developer Student Club to organize virtual events that engaged students
+on campus.
+Communicated effectively with engineers and quality assurance teams at Intuitive Surgical to troubleshoot manufacturing issues.
