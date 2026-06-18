@@ -9,10 +9,10 @@ export default function Objective() {
       </div>
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800/30">
         <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-[15px]">
-          Aspiring software engineer with a 3.94 GPA and strong experience in full-stack development, AI-powered applications, 
-          and software engineering principles. Proven ability to build scalable web and mobile applications using Next.js, 
-          Firebase, and Android Studio. Strong problem-solving skills with experience in robotics manufacturing and technical 
-          documentation at Intuitive Surgical. Passionate about leveraging technology to create impactful solutions.
+          Results-driven Software Engineer with a 3.94 GPA and experience in full-stack development, AI applications, and mobile app
+          development. Proficient in software development lifecycle (SDLC), Agile methodologies, REST APIs, and cloud technologies.
+          Passionate about AI, automation, and scalable software solutions. Proven ability to design, develop, and deploy web, mobile, and
+          desktop applications using Next.js, Firebase, Kotlin, and cloud platforms.
         </p>
       </div>
     </section>

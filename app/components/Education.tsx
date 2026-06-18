@@ -19,15 +19,11 @@ export default function Education() {
         <div className="space-y-2.5 text-sm text-gray-700 dark:text-gray-300">
           <div className="flex items-start gap-2">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
-            <p><span className="font-medium text-gray-900 dark:text-white">GPA:</span> 3.94/4.0 | Dean&apos;s List (Fall 2023, Spring 2024, Fall 2024)</p>
+            <p><span className="font-medium text-gray-900 dark:text-white">Honors & Awards:</span> Dean&apos;s List (Fall 2023, Spring 2024, Fall 2024), CS Department Scholarship (2023-2024) | GPA: 3.94/4.0</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
-            <p><span className="font-medium text-gray-900 dark:text-white">Achievement:</span> Recipient of CS Department Scholarship (2023-2024)</p>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
-            <p><span className="font-medium text-gray-900 dark:text-white">Coursework:</span> Data Structures & Algorithms, Software Engineering, Discrete Structures, Operating Systems, Computer Architecture, Computer Networks</p>
+            <p><span className="font-medium text-gray-900 dark:text-white">Coursework:</span> Data Structures & Algorithms, Object-Oriented Programming, Software Engineering, Operating Systems, Database Management, Computer Networks, Artificial Intelligence</p>
           </div>
           <div className="flex items-start gap-2">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>

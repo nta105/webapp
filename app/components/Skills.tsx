@@ -1,6 +1,7 @@
 export default function Skills() {
-  const languages = ['Java', 'Python', 'C++', 'C', 'HTML/CSS', 'JavaScript', 'SQL', 'TypeScript', 'Kotlin']
-  const frameworks = ['Git', 'GitHub', 'Next.js', 'Firebase', 'Tailwind CSS', 'Tkinter', 'Vercel', 'Supabase']
+  const languages = ['Python', 'C++', 'JavaScript', 'TypeScript', 'Kotlin', 'SQL']
+  const technologies = ['Claude', 'GitHub Copilot', 'Advantest V93000', 'Eclipse', 'Visual Studio Code', 'Next.js', 'React', 'Node.js', 'Firebase', 'Supabase', 'Tailwind CSS', 'Vercel', 'Git/GitHub', 'Android Studio', 'Tkinter']
+  const databases = ['MySQL', 'PostgreSQL', 'Firestore', 'Supabase']
 
   return (
     <section id="skills" className="mb-10 animate-fade-in-up">
@@ -22,10 +23,20 @@ export default function Skills() {
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700/50 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Frameworks & Technologies</h3>
+          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Technologies & Tools</h3>
           <div className="flex flex-wrap gap-2">
-            {frameworks.map((skill) => (
+            {technologies.map((skill) => (
               <span key={skill} className="px-3 py-1.5 text-sm font-medium bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg border border-indigo-100 dark:border-indigo-800/50 hover:scale-105 transition-transform cursor-default">
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700/50 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Databases</h3>
+          <div className="flex flex-wrap gap-2">
+            {databases.map((skill) => (
+              <span key={skill} className="px-3 py-1.5 text-sm font-medium bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-lg border border-emerald-100 dark:border-emerald-800/50 hover:scale-105 transition-transform cursor-default">
                 {skill}
               </span>
             ))}

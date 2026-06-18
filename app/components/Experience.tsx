@@ -7,27 +7,64 @@ export default function Experience() {
         </div>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Work Experience</h2>
       </div>
-      <div className="bg-white dark:bg-gray-800/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-shadow">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Intuitive Surgical</h3>
-          <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50 px-2.5 py-0.5 rounded-full">Sunnyvale, CA</span>
-        </div>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-          <p className="text-blue-600 dark:text-blue-400 font-medium">Technician</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">July 2022 – July 2023</p>
-        </div>
-        <div className="space-y-2.5 text-sm text-gray-700 dark:text-gray-300">
-          <div className="flex items-start gap-2">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
-            <p>Assembled precision robotic components for the Da Vinci surgical system and Ion robotic platform, ensuring 100% compliance with quality and safety standards.</p>
+      <div className="space-y-4">
+        {/* Empower Semiconductor */}
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Empower Semiconductor</h3>
+            <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50 px-2.5 py-0.5 rounded-full">Milpitas, CA</span>
           </div>
-          <div className="flex items-start gap-2">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
-            <p>Conducted functional tests on 20+ devices per week, identifying defects early and reducing rework time by 15%.</p>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1">
+            <p className="text-blue-600 dark:text-blue-400 font-medium">Product & Test Engineer</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">May 2026 – Present</p>
           </div>
-          <div className="flex items-start gap-2">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
-            <p>Improved manufacturing procedure instructions by collaborating with software engineers, leading to a 10% reduction in assembly errors.</p>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+            <p className="text-blue-600 dark:text-blue-400 font-medium">Product & Test Engineering Intern</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">May 2025 – Dec 2025</p>
+          </div>
+          <div className="space-y-2.5 text-sm text-gray-700 dark:text-gray-300">
+            <div className="flex items-start gap-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
+              <p>Write and perform IC device testing using C++ scripts on Advantest V93000 with SmartTest, including functional validation and non-volatile memory (NVM) programming for production burn-in.</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
+              <p>Develop and deploy a Python-based STDF-to-Excel conversion tool using pandas, openpyxl, and pystdf to streamline analysis of semiconductor test data.</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
+              <p>Collaborated closely with test engineers to troubleshoot logs, refine test workflows, and support QA for production and R&D units.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Intuitive Surgical */}
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-6 border border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Intuitive Surgical</h3>
+            <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50 px-2.5 py-0.5 rounded-full">Sunnyvale, CA</span>
+          </div>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+            <p className="text-blue-600 dark:text-blue-400 font-medium">Technician</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">July 2022 – July 2023</p>
+          </div>
+          <div className="space-y-2.5 text-sm text-gray-700 dark:text-gray-300">
+            <div className="flex items-start gap-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
+              <p>Assembled precision robotic components for the Da Vinci surgical system and Ion robotic platform, ensuring 100% compliance with quality and safety standards.</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
+              <p>Conducted functional testing on 20+ robotic devices per week, reducing defect rates by 15%.</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
+              <p>Improved technical documentation & manufacturing workflows, leading to a 10% reduction in errors.</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></span>
+              <p>Suggested process automation strategies to improve quality assurance and efficiency.</p>
+            </div>
           </div>
         </div>
       </div>
