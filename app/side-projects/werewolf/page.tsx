@@ -771,7 +771,7 @@ export default function WerewolfGame() {
       {/* Werewolf-specific background */}
       <div className="fixed inset-0 z-[-1]">
         <img src="/werewolf-background.jpg" alt="" className="w-full h-full object-cover blur-sm" />
-        <div className="absolute inset-0 bg-black/90"></div>
+        <div className="absolute inset-0 bg-black/80 dark:bg-black/90 transition-colors duration-500"></div>
       </div>
 
       <main className="max-w-[1360px] mx-auto">

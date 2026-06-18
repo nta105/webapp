@@ -14,8 +14,8 @@ export default function ResumePage() {
       {/* Resume background */}
       <div className="fixed inset-0 z-[-1]">
         <img src="/background.avif" alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gray-950/80 dark:bg-gray-950/92"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-950/40 via-transparent to-indigo-950/50"></div>
+        <div className="absolute inset-0 bg-gray-950/65 dark:bg-gray-950/88 transition-colors duration-500"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-950/20 via-transparent to-indigo-950/30 dark:from-blue-950/40 dark:via-transparent dark:to-indigo-950/50 transition-colors duration-500"></div>
       </div>
       <main className="max-w-4xl mx-auto">
         <Header />

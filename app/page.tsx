@@ -34,12 +34,12 @@ export default function GuitarPage() {
       {/* Guitar page background */}
       <div className="fixed inset-0 z-[-1]">
         <img src="/guitar/background.avif" alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/65 dark:bg-black/75"></div>
+        <div className="absolute inset-0 bg-black/50 dark:bg-black/75 transition-colors duration-500"></div>
       </div>
 
       {/* Hero Section */}
       <section className="min-h-screen flex items-center justify-center relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60 dark:from-black/75 dark:via-black/50 dark:to-black/75"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50 dark:from-black/75 dark:via-black/50 dark:to-black/75 transition-colors duration-500"></div>
         <div className="relative z-10 text-center px-4 py-20">
           <p className="text-sm font-medium tracking-[4px] uppercase text-amber-400 mb-4 animate-fade-in-up">
             Professional Guitarist & Music Instructor
