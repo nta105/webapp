@@ -770,8 +770,8 @@ export default function WerewolfGame() {
     <div className={`min-h-screen py-8 px-4 sm:px-6 relative ${beVietnam.variable}`}>
       {/* Werewolf-specific background */}
       <div className="fixed inset-0 z-[-1]">
-        <img src="/werewolf-background.jpg" alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/88"></div>
+        <img src="/werewolf-background.jpg" alt="" className="w-full h-full object-cover blur-sm" />
+        <div className="absolute inset-0 bg-black/90"></div>
       </div>
 
       <main className="max-w-[1360px] mx-auto">
