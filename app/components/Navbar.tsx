@@ -13,6 +13,8 @@ export default function Navbar() {
 
   const isResume = pathname.startsWith('/resume')
   const isWerewolf = pathname.startsWith('/side-projects/werewolf')
+  const isSideProjects = pathname === '/side-projects'
+  const isGallery = pathname.startsWith('/gallery')
 
   const getNavLinks = () => {
     if (isResume) {
@@ -25,10 +27,10 @@ export default function Navbar() {
         { href: '#activities', label: 'Activities' },
       ]
     }
-    if (isWerewolf) {
+    if (isWerewolf || isSideProjects || isGallery) {
       return []
     }
-    // Guitar main page & gallery
+    // Guitar main page
     return [
       { href: '#about', label: 'About' },
       { href: '#performances', label: 'Performance' },
