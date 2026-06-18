@@ -3,6 +3,12 @@ import Link from 'next/link'
 export default function SideProjects() {
   const projects = [
     {
+      title: '🎸 Guitar — Thien An Nguyen',
+      description: 'Professional guitarist & music instructor portfolio showcasing live performances, collaborations with renowned artists, and music instruction services.',
+      href: '/side-projects/guitar',
+      tags: ['Music', 'Portfolio', 'Performance'],
+    },
+    {
       title: '🐺 Ma Sói — Werewolf',
       description: 'Browser-based host tool for the Werewolf party game with private role reveals, button selection, and full night/day automation.',
       href: '/side-projects/werewolf',
