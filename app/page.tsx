@@ -286,6 +286,17 @@ export default function GuitarPage() {
           </div>
         </section>
 
+        {/* Services Card */}
+        <section className="animate-fade-in-up">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-white mb-3">What I Offer</h2>
+            <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto"></div>
+          </div>
+          <div className="glass-card rounded-2xl p-6 sm:p-8">
+            <img src="/guitar/services-card.png" alt="Thien An Nguyen - Guitar Services" className="w-full max-w-[720px] mx-auto rounded-xl" loading="lazy" />
+          </div>
+        </section>
+
         {/* Footer */}
         <footer className="text-center pt-10 pb-4">
           <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8"></div>
