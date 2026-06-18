@@ -3,10 +3,10 @@ import Link from 'next/link'
 export default function SideProjects() {
   const projects = [
     {
-      title: '🎸 Guitar — Thien An Nguyen',
-      description: 'Professional guitarist & music instructor portfolio showcasing live performances, collaborations with renowned artists, and music instruction services.',
-      href: '/side-projects/guitar',
-      tags: ['Music', 'Portfolio', 'Performance'],
+      title: '📄 My Resume',
+      description: 'Professional resume showcasing work experience, education, skills, and projects as an Associate Engineer in System Applications.',
+      href: '/resume',
+      tags: ['Resume', 'Portfolio', 'Engineering'],
     },
     {
       title: '🐺 Ma Sói — Werewolf',
