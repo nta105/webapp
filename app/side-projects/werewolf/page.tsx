@@ -2,6 +2,13 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import Link from 'next/link'
+import { Be_Vietnam_Pro } from 'next/font/google'
+
+const beVietnam = Be_Vietnam_Pro({
+  subsets: ['vietnamese', 'latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-be-vietnam',
+})
 
 // ─── Types ───
 interface Player {
@@ -446,7 +453,7 @@ export default function WerewolfGame() {
 
     // ── Ma Sói ──
     await showSimplePrompt({ title: 'MA SÓI thức dậy', body: 'Những người khác nhắm mắt.', primaryText: 'Tiếp tục' })
-    const activeWolves = state.players.filter(p => p.isAlive && p.role.includes('Sói') && state.players.indexOf(p) !== intentDisabledPlayer)
+    const activeWolves = state.players.filter(p => p.isAlive && (p.role.includes('Sói') || p.isTransformed) && state.players.indexOf(p) !== intentDisabledPlayer)
     if (activeWolves.length) {
       const num = state.extraKillNextNight ? 2 : 1
       setGameState(prev => ({ ...prev, extraKillNextNight: false }))
@@ -694,7 +701,7 @@ export default function WerewolfGame() {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
         <div className="w-full max-w-[720px] bg-gradient-to-b from-[#141930]/98 to-[#0a0e1a]/98 border border-red-900/20 rounded-2xl shadow-2xl p-6 animate-slideIn">
-          <h2 className="text-xl font-bold text-amber-100 mb-2 font-serif tracking-wide">{modal.title}</h2>
+          <h2 className="text-xl font-bold text-amber-100 mb-2 font-[family-name:var(--font-be-vietnam)] tracking-wide">{modal.title}</h2>
           {modal.subtitle && <p className="text-white/50 text-sm mb-3">{modal.subtitle}</p>}
 
           {modal.mode === 'simple' && (
@@ -760,11 +767,11 @@ export default function WerewolfGame() {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 relative">
+    <div className={`min-h-screen py-8 px-4 sm:px-6 relative ${beVietnam.variable}`}>
       {/* Werewolf-specific background */}
       <div className="fixed inset-0 z-[-1]">
         <img src="/werewolf-background.jpg" alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/78"></div>
+        <div className="absolute inset-0 bg-black/88"></div>
       </div>
 
       <main className="max-w-[1360px] mx-auto">
@@ -777,7 +784,7 @@ export default function WerewolfGame() {
         {/* Header */}
         <div className="glass-card rounded-2xl p-6 mb-5 relative overflow-hidden">
           <div className="absolute -top-12 -right-8 w-60 h-60 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
-          <h1 className="text-2xl sm:text-3xl font-bold font-serif tracking-wide bg-gradient-to-r from-amber-200 via-amber-100 to-red-300 bg-clip-text text-transparent mb-1">🐺 Ma Sói — Werewolf</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold font-[family-name:var(--font-be-vietnam)] tracking-wide bg-gradient-to-r from-amber-200 via-amber-100 to-red-300 bg-clip-text text-transparent mb-1">🐺 Ma Sói — Werewolf</h1>
           <p className="text-white/40 text-sm">Browser-based host tool — private role reveals, button selection, full night/day automation</p>
           <div className="mt-2 text-[11px] text-white/20 tracking-[4px]">🌕 🌲 🐺 🔮 🏹 💀 🌲 🌕</div>
         </div>
@@ -787,7 +794,7 @@ export default function WerewolfGame() {
           {gameState.phase === 'setup' && (
             <div className="glass-card rounded-2xl overflow-hidden lg:col-span-2">
               <div className="px-5 py-3 border-b border-white/5 bg-white/[0.02]">
-                <h2 className="text-sm font-bold font-serif uppercase tracking-widest text-amber-100">Thiết lập</h2>
+                <h2 className="text-sm font-bold font-[family-name:var(--font-be-vietnam)] uppercase tracking-widest text-amber-100">Thiết lập</h2>
               </div>
               <div className="p-5 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -825,7 +832,7 @@ export default function WerewolfGame() {
           {/* Status Card */}
           <div className="glass-card rounded-2xl overflow-hidden">
             <div className="px-5 py-3 border-b border-white/5 bg-white/[0.02]">
-              <h2 className="text-sm font-bold font-serif uppercase tracking-widest text-amber-100">Trạng thái game</h2>
+              <h2 className="text-sm font-bold font-[family-name:var(--font-be-vietnam)] uppercase tracking-widest text-amber-100">Trạng thái game</h2>
             </div>
             <div className="p-5">
               <div className="p-4 rounded-xl bg-gradient-to-br from-purple-900/15 to-red-900/5 border border-blue-400/10 mb-4">
@@ -851,7 +858,7 @@ export default function WerewolfGame() {
           {/* Log Card */}
           <div className="glass-card rounded-2xl overflow-hidden">
             <div className="px-5 py-3 border-b border-white/5 bg-white/[0.02]">
-              <h2 className="text-sm font-bold font-serif uppercase tracking-widest text-amber-100">Nhật ký</h2>
+              <h2 className="text-sm font-bold font-[family-name:var(--font-be-vietnam)] uppercase tracking-widest text-amber-100">Nhật ký</h2>
             </div>
             <div className="p-5">
               <div ref={logBoxRef} className="bg-black/40 border border-white/5 rounded-xl p-4 min-h-[200px] max-h-[500px] overflow-auto whitespace-pre-wrap font-mono text-xs text-white/60 leading-relaxed">
@@ -864,7 +871,7 @@ export default function WerewolfGame() {
           {gameState.players.length > 0 && (
             <div className="glass-card rounded-2xl overflow-hidden lg:col-span-2">
               <div className="px-5 py-3 border-b border-white/5 bg-white/[0.02]">
-                <h2 className="text-sm font-bold font-serif uppercase tracking-widest text-amber-100">Người chơi</h2>
+                <h2 className="text-sm font-bold font-[family-name:var(--font-be-vietnam)] uppercase tracking-widest text-amber-100">Người chơi</h2>
               </div>
               <div className="p-5">
                 <div className="grid gap-2 max-h-[60vh] overflow-auto pr-1">
