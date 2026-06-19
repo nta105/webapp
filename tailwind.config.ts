@@ -53,7 +53,22 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+  		keyframes: {
+  			'tile-pop': {
+  				'0%': { transform: 'scale(0)', opacity: '0' },
+  				'50%': { transform: 'scale(1.1)' },
+  				'100%': { transform: 'scale(1)', opacity: '1' },
+  			},
+  			'fade-in': {
+  				'0%': { opacity: '0' },
+  				'100%': { opacity: '1' },
+  			},
+  		},
+  		animation: {
+  			'tile-pop': 'tile-pop 150ms ease-out',
+  			'fade-in': 'fade-in 300ms ease-out',
+  		},
   	}
   },
   plugins: [require("tailwindcss-animate")],

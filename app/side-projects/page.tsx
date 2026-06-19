@@ -14,6 +14,12 @@ export default function SideProjects() {
       href: '/side-projects/werewolf',
       tags: ['Game', 'Interactive', 'Vietnamese'],
     },
+    {
+      title: '🎮 2048 — Puzzle Game',
+      description: 'The classic 2048 sliding puzzle game, ported from my Android app. Swipe or use arrow keys to merge tiles and reach 2048!',
+      href: '/side-projects/game2048',
+      tags: ['Game', 'Puzzle', 'Android Port'],
+    },
   ]
 
   return (
