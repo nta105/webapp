@@ -324,17 +324,10 @@ export default function Game2048Page() {
     return () => window.removeEventListener('keydown', handler)
   }, [handleMove])
 
-  // Touch/swipe controls
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const touch = e.touches[0]
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY }
-  }
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStartRef.current) return
-    const touch = e.changedTouches[0]
-    const dx = touch.clientX - touchStartRef.current.x
-    const dy = touch.clientY - touchStartRef.current.y
+  // Swipe detection helper
+  const detectSwipe = useCallback((startX: number, startY: number, endX: number, endY: number) => {
+    const dx = endX - startX
+    const dy = endY - startY
     const SWIPE_THRESHOLD = 50
 
     if (Math.abs(dx) > Math.abs(dy)) {
@@ -346,7 +339,36 @@ export default function Game2048Page() {
         handleMove(dy > 0 ? 'down' : 'up')
       }
     }
+  }, [handleMove])
+
+  // Touch/swipe controls
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY }
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartRef.current) return
+    const touch = e.changedTouches[0]
+    detectSwipe(touchStartRef.current.x, touchStartRef.current.y, touch.clientX, touch.clientY)
     touchStartRef.current = null
+  }
+
+  // Mouse drag controls
+  const mouseStartRef = useRef<{ x: number; y: number } | null>(null)
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    mouseStartRef.current = { x: e.clientX, y: e.clientY }
+  }
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!mouseStartRef.current) return
+    detectSwipe(mouseStartRef.current.x, mouseStartRef.current.y, e.clientX, e.clientY)
+    mouseStartRef.current = null
+  }
+
+  const handleMouseLeave = () => {
+    mouseStartRef.current = null
   }
 
   const handleNewGame = () => {
@@ -405,15 +427,18 @@ export default function Game2048Page() {
 
         {/* How to play */}
         <p className="text-xs mb-4" style={{ color: '#776E65' }}>
-          <b>HOW TO PLAY:</b> Use your <b>arrow keys</b> or <b>swipe</b> to move the tiles. Tiles with the same number <b>merge into one</b> when they touch.
+          <b>HOW TO PLAY:</b> Use <b>arrow keys</b>, <b>swipe</b>, or <b>click & drag</b> to move the tiles. Tiles with the same number <b>merge into one</b> when they touch.
         </p>
 
         {/* Game Board */}
         <div
-          className="relative rounded-xl p-2 sm:p-3"
+          className="relative rounded-xl p-2 sm:p-3 cursor-grab active:cursor-grabbing"
           style={{ backgroundColor: '#BBADA0' }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
         >
           {/* Empty cell backgrounds */}
           <div className="grid grid-cols-4 gap-2 sm:gap-3">
