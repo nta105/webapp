@@ -337,23 +337,68 @@ export default function WerewolfGame() {
   const checkVictory = (): boolean => {
     const st = stateRef.current
     const alives = st.players.filter(p => p.isAlive)
-    const wolves = alives.filter(p => p.side === 'Sói' || p.isTransformed)
-    const villagers = alives.filter(p => p.side === 'Dân' && !p.isTransformed)
-    const mirrorAlive = alives.filter(p => p.role === 'Gương')
+    const mirrors = alives.filter(p => p.role === 'Gương')
+
+    // Detect mixed Cupid couple (one villager-side, one werewolf-side).
+    // Mixed couple is treated as an independent faction.
+    let mixedCouple: { p1: Player; p2: Player } | null = null
+    const processed = new Set<number>()
+    for (const p of alives) {
+      const pIdx = st.players.indexOf(p)
+      if (p.linkedWith === null || processed.has(pIdx)) continue
+      const partner = st.players[p.linkedWith]
+      if (!partner || !partner.isAlive) continue
+      const pIsWolf = p.side === 'Sói' || p.isTransformed
+      const partnerIsWolf = partner.side === 'Sói' || partner.isTransformed
+      if (pIsWolf !== partnerIsWolf) mixedCouple = { p1: p, p2: partner }
+      processed.add(pIdx)
+      processed.add(p.linkedWith)
+    }
 
     let victoryMsg: string | null = null
-    if (mirrorAlive.length) {
-      const m = mirrorAlive[0]
-      const others = alives.filter(p => p !== m)
-      if (others.length && others.every(p => p.markedByMirror)) {
-        victoryMsg = '🪞 GƯƠNG CHIẾN THẮNG TUYỆT ĐỐI!'
+
+    // 1) Mirror check first (highest priority independent faction).
+    if (mirrors.length) {
+      const mirror = mirrors[0]
+      const others = alives.filter(p => p !== mirror)
+      if (others.length > 0 && others.every(p => p.markedByMirror)) {
+        victoryMsg = `🪞 GƯƠNG (${mirror.name}) CHIẾN THẮNG TUYỆT ĐỐI! Tất cả người chơi đã bị soi.`
+      } else {
+        const phaseName = mixedCouple ? '4 phe (Gương, Cặp đôi, Sói, Dân)' : '3 phe (Gương, Sói, Dân)'
+        log(`[TRÒ CHƠI TIẾP TIẾP] Gương còn sống. Cuộc chơi tiếp tục với ${phaseName}`)
+        return false
       }
     }
-    if (!victoryMsg && !villagers.length) {
-      victoryMsg = '🐺 PHE MA SÓI CHIẾN THẮNG!'
+
+    // 2) Mixed-couple check (independent faction) when Mirror is not alive.
+    if (!victoryMsg && mixedCouple) {
+      const othersInGame = alives.filter(p => p !== mixedCouple!.p1 && p !== mixedCouple!.p2)
+      if (othersInGame.length === 0) {
+        victoryMsg = `❤️ CẶP ĐÔI (${mixedCouple.p1.name} & ${mixedCouple.p2.name}) CHIẾN THẮNG! Chỉ còn mình họ!`
+      } else {
+        const otherWolves = alives.filter(p => (p.side === 'Sói' || p.isTransformed) && p !== mixedCouple!.p1 && p !== mixedCouple!.p2)
+        const otherVillagers = alives.filter(p => p.side === 'Dân' && !p.isTransformed && p !== mixedCouple!.p1 && p !== mixedCouple!.p2)
+        log(`[TRÒ CHƠI TIẾP TIẾP] Cặp đôi (${mixedCouple.p1.name} & ${mixedCouple.p2.name}) còn sống. Cuộc chơi tiếp tục với 3 phe: Cặp đôi, Sói (${otherWolves.length}), Dân (${otherVillagers.length})`)
+        return false
+      }
     }
-    if (!victoryMsg && !wolves.length) {
-      victoryMsg = '🏆 PHE DÂN LÀNG CHIẾN THẮNG!'
+
+    // 3) Regular villager-vs-werewolf resolution.
+    if (!victoryMsg) {
+      const wolves = alives.filter(p => p.side === 'Sói' || p.isTransformed)
+      const villagers = alives.filter(p => p.side === 'Dân' && !p.isTransformed)
+
+      const hasAliveWitchWithPoison = !st.isCursed && st.witchPoison && alives.some(p => p.role === 'Phù Thủy')
+      const hasAliveHunterShotPotential = !st.isCursed && alives.some(p => p.role === 'Thợ Săn')
+      const hasPendingHunterShot = st.pendingHunterKill !== null && !!st.players[st.pendingHunterKill]?.isAlive
+      const villagersHaveComebackPotential = hasAliveWitchWithPoison || hasAliveHunterShotPotential || hasPendingHunterShot
+
+      // Wolves only auto-win at parity/majority when villagers have no lethal comeback path left.
+      if (wolves.length > 0 && wolves.length >= villagers.length && !villagersHaveComebackPotential) {
+        victoryMsg = `🐺 PHE MA SÓI CHIẾN THẮNG! Sói đã đạt được đa số (${wolves.length} Sói vs ${villagers.length} Dân).`
+      } else if (wolves.length === 0 && villagers.length > 0) {
+        victoryMsg = '🏆 PHE DÂN LÀNG CHIẾN THẮNG! Tất cả ma sói đã bị tiêu diệt.'
+      }
     }
 
     if (victoryMsg) {
@@ -394,7 +439,12 @@ export default function WerewolfGame() {
       if (mirrorIndex !== -1) {
         const alive = state.players.filter(p => p.isAlive)
         const mirrorAliveIdx = alive.findIndex(p => p === state.players[mirrorIndex])
-        const choice = await awaitPlayerChoice({ title: 'Chào Gương, chọn người phản chiếu:', disabledIndices: [mirrorAliveIdx] })
+        const alreadyMarked = alive.filter(p => p.markedByMirror).map(p => p.name).join(', ')
+        const choice = await awaitPlayerChoice({
+          title: 'Chào Gương, chọn người phản chiếu:',
+          subtitle: alreadyMarked ? `Những người đã bị soi: ${alreadyMarked}` : 'Bạn chưa soi ai cả',
+          disabledIndices: [mirrorAliveIdx],
+        })
         if (choice !== null) {
           mirrorTargetIndex = state.players.indexOf(alive[choice])
           setGameState(prev => {
@@ -402,7 +452,9 @@ export default function WerewolfGame() {
             players[mirrorTargetIndex!].markedByMirror = true
             return { ...prev, players }
           })
-          log(`Gương soi ${alive[choice].name}`)
+          const markedCount = stateRef.current.players.filter(p => p.markedByMirror).length + 1
+          const totalAlive = stateRef.current.players.filter(p => p.isAlive).length
+          log(`Gương soi ${alive[choice].name} (${markedCount}/${totalAlive} người đã bị soi)`)
         }
       }
       await showSimplePrompt({ title: 'Xong', body: 'Hãy nhắm mắt lại.', primaryText: 'Tiếp tục' })
