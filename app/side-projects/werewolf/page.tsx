@@ -21,6 +21,7 @@ interface Player {
   hunterTarget: number | null
   isTransformed: boolean
   markedByMirror: boolean
+  foxCanScan: boolean
 }
 
 interface GameState {
@@ -32,6 +33,8 @@ interface GameState {
   isCursed: boolean
   pendingHunterKill: number | null
   lastProtected: number | null
+  bearLastAnnouncement: 'CÓ' | 'KHÔNG' | null
+  bearReverseAnnouncementToday: boolean
   gameLogs: string[]
   running: boolean
   phase: 'setup' | 'reveal' | 'playing' | 'ended'
@@ -66,6 +69,8 @@ const roleMap = new Map<string, string>([
   ['masoi', 'Ma Sói'], ['soi', 'Ma Sói'], ['wolf', 'Ma Sói'], ['werewolf', 'Ma Sói'],
   ['soicon', 'Sói Con'], ['wolfcub', 'Sói Con'],
   ['tientri', 'Tiên Tri'], ['seer', 'Tiên Tri'],
+  ['cao', 'Fox/Cao'], ['fox', 'Fox/Cao'],
+  ['gau', 'Gau/Bear'], ['bear', 'Gau/Bear'],
   ['baove', 'Bảo Vệ'], ['bodyguard', 'Bảo Vệ'],
   ['phuthuy', 'Phù Thủy'], ['witch', 'Phù Thủy'],
   ['thosan', 'Thợ Săn'], ['hunter', 'Thợ Săn'],
@@ -127,6 +132,8 @@ export default function WerewolfGame() {
     isCursed: false,
     pendingHunterKill: null,
     lastProtected: null,
+    bearLastAnnouncement: null,
+    bearReverseAnnouncementToday: false,
     gameLogs: [],
     running: false,
     phase: 'setup',
@@ -179,6 +186,12 @@ export default function WerewolfGame() {
       return mirrorTargetGlobalIdx
     }
     return targetGlobalIdx
+  }
+
+  const getSeatGroupIndices = (centerIndex: number, totalPlayers: number): [number, number, number] => {
+    const left = (centerIndex - 1 + totalPlayers) % totalPlayers
+    const right = (centerIndex + 1) % totalPlayers
+    return [left, centerIndex, right]
   }
 
   const kill = useCallback((playerIndex: number, reason: string, isDaytime = false, silent = false, hideRole = false, currentNightDeathEvents?: number[]) => {
@@ -258,6 +271,8 @@ export default function WerewolfGame() {
       isCursed: false,
       pendingHunterKill: null,
       lastProtected: null,
+      bearLastAnnouncement: null,
+      bearReverseAnnouncementToday: false,
       gameLogs: [],
       running: false,
       phase: 'setup',
@@ -290,6 +305,7 @@ export default function WerewolfGame() {
         hunterTarget: null,
         isTransformed: false,
         markedByMirror: false,
+        foxCanScan: true,
       }
     })
 
@@ -303,6 +319,8 @@ export default function WerewolfGame() {
       isCursed: false,
       pendingHunterKill: null,
       lastProtected: null,
+      bearLastAnnouncement: null,
+      bearReverseAnnouncementToday: false,
       gameLogs: ['--- SETUP GAME ---', `Tổng số người chơi: ${num}`, 'Vai trò đã được phân bổ.'],
       running: true,
       phase: 'reveal',
@@ -681,6 +699,87 @@ export default function WerewolfGame() {
       await showSimplePrompt({ title: 'Xong', body: 'Hãy nhắm mắt lại.', primaryText: 'Tiếp tục' })
     }
 
+    // ── Fox/Cao ──
+    if (state.players.some(p => p.role === 'Fox/Cao')) {
+      const currentState = stateRef.current
+      const foxDead = getRoleDeadNames(p => p.role === 'Fox/Cao')
+      const foxWakeNotes: string[] = ['Những người khác nhắm mắt.']
+      if (foxDead.length) {
+        foxWakeNotes.push(`HOST NOTE: Fox/Cao đã chết (${foxDead.join(', ')}). Vẫn gọi vai để giữ bí mật.`)
+      }
+
+      const aliveFoxes = currentState.players
+        .map((p, i) => ({ p, i }))
+        .filter(({ p }) => p.role === 'Fox/Cao' && p.isAlive)
+
+      const disabledFoxesByBitch = aliveFoxes
+        .filter(({ i }) => i === intentDisabledPlayer)
+        .map(({ p }) => p.name)
+      if (disabledFoxesByBitch.length) {
+        foxWakeNotes.push(`⚠️ ${disabledFoxesByBitch.join(', ')} bị Bitch chọn tối nay nên KHÔNG được soi nhóm 3 người.`)
+      }
+
+      if (currentState.isCursed && aliveFoxes.length) {
+        foxWakeNotes.push('⚠️ Già Làng đã nguyền: Fox/Cao KHÔNG được dùng kỹ năng đêm nay.')
+      }
+
+      const lockedFoxes = aliveFoxes.filter(({ p }) => !p.foxCanScan).map(({ p }) => p.name)
+      if (lockedFoxes.length) {
+        foxWakeNotes.push(`⚠️ ${lockedFoxes.join(', ')} đã nhận kết quả KHÔNG trước đó nên không thể soi tiếp ở các đêm sau.`)
+      }
+
+      await showSimplePrompt({ title: 'FOX/CAO thức dậy', body: foxWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
+
+      if (!currentState.isCursed) {
+        for (const fox of aliveFoxes) {
+          const foxPlayer = currentState.players[fox.i]
+          if (fox.i === intentDisabledPlayer) continue
+          if (!foxPlayer.foxCanScan) continue
+
+          await showSimplePrompt({ title: `Mời ${foxPlayer.name}`, body: 'Chọn 1 người để soi nhóm 3 người gồm trái - giữa - phải theo vị trí ngồi.', primaryText: 'Tiếp tục' })
+
+          const aliveNow = stateRef.current.players.filter(p => p.isAlive)
+          const foxAliveIdx = aliveNow.findIndex(p => p === foxPlayer)
+          const choice = await awaitPlayerChoice({
+            title: 'Fox/Cao soi ai?',
+            subtitle: 'Kết quả: CÓ nếu trong nhóm 3 người theo vị trí ngồi có ít nhất 1 phe Sói; KHÔNG nếu cả 3 đều không thuộc phe Sói.',
+            disabledIndices: foxAliveIdx !== -1 ? [foxAliveIdx] : [],
+          })
+
+          if (choice !== null) {
+            const aliveAfterChoice = stateRef.current.players.filter(p => p.isAlive)
+            const selectedGlobalIdx = stateRef.current.players.indexOf(aliveAfterChoice[choice])
+            const resolvedTarget = reflect(selectedGlobalIdx, mirrorIndex, mirrorTargetIndex)
+            const [leftIdx, centerIdx, rightIdx] = getSeatGroupIndices(resolvedTarget, stateRef.current.players.length)
+            const group = [leftIdx, centerIdx, rightIdx].map(idx => stateRef.current.players[idx])
+            const hasWerewolfSide = group.some(p => p.role.includes('Sói') || p.isTransformed)
+
+            if (!hasWerewolfSide) {
+              setGameState(prev => {
+                const players = [...prev.players.map(p => ({ ...p }))]
+                players[fox.i].foxCanScan = false
+                return { ...prev, players }
+              })
+            }
+
+            const answer = hasWerewolfSide ? 'CÓ' : 'KHÔNG'
+            await showSimplePrompt({
+              title: `Kết quả cho ${foxPlayer.name}`,
+              subtitle: `Soi ${aliveAfterChoice[choice].name}: ${answer}`,
+              body: hasWerewolfSide
+                ? 'Nhóm 3 người theo vị trí ngồi có ít nhất 1 người thuộc phe Sói. Đêm sau bạn vẫn được soi.'
+                : 'Nhóm 3 người theo vị trí ngồi đều không thuộc phe Sói. Từ đêm sau bạn không được soi nữa.',
+              primaryText: 'Tiếp tục',
+            })
+
+            log(`Fox/Cao ${foxPlayer.name} soi ${aliveAfterChoice[choice].name} -> ${answer}`)
+          }
+        }
+      }
+
+      await showSimplePrompt({ title: 'Xong', body: 'Hãy nhắm mắt lại.', primaryText: 'Tiếp tục' })
+    }
+
     // ── Thợ Săn ──
     if (state.players.some(p => p.role === 'Thợ Săn')) {
       const hunterIndex = state.players.findIndex(p => p.role === 'Thợ Săn' && p.isAlive)
@@ -715,7 +814,13 @@ export default function WerewolfGame() {
     }
 
     // ── Xử lý kết quả đêm ──
-    setGameState(prev => ({ ...prev, lastProtected: intentProtected }))
+    const bearIndex = state.players.findIndex(p => p.role === 'Gau/Bear')
+    const bearWasDisabledTonight = bearIndex !== -1 && intentDisabledPlayer === bearIndex
+    setGameState(prev => ({
+      ...prev,
+      lastProtected: intentProtected,
+      bearReverseAnnouncementToday: bearWasDisabledTonight,
+    }))
     const aliveBeforeNight = new Set(state.players.map((p, i) => (p.isAlive ? i : -1)).filter(i => i !== -1))
     const nightVictims: number[] = []
 
@@ -819,6 +924,64 @@ export default function WerewolfGame() {
     const currentState = stateRef.current
     log(`\n--- BAN NGÀY ---`)
     setGameState(prev => ({ ...prev, pendingDeathMessages: [] }))
+
+    // ── Gau/Bear danger announcement at the beginning of each day ──
+    const bearGlobalIdx = currentState.players.findIndex(p => p.role === 'Gau/Bear')
+    if (bearGlobalIdx !== -1) {
+      const bearPlayer = currentState.players[bearGlobalIdx]
+      const reverseByBitch = currentState.bearReverseAnnouncementToday
+      let announcement: 'CÓ' | 'KHÔNG' | null = null
+      let isRepeatedAfterDeath = false
+
+      if (bearPlayer.isAlive) {
+        const [leftIdx, , rightIdx] = getSeatGroupIndices(bearGlobalIdx, currentState.players.length)
+        const leftPlayer = currentState.players[leftIdx]
+        const rightPlayer = currentState.players[rightIdx]
+        const hasDanger = [leftPlayer, rightPlayer].some(p => p.isAlive && (p.role.includes('Sói') || p.isTransformed))
+        const finalSignal = reverseByBitch ? !hasDanger : hasDanger
+        announcement = finalSignal ? 'CÓ' : 'KHÔNG'
+
+        setGameState(prev => ({
+          ...prev,
+          bearLastAnnouncement: announcement,
+          bearReverseAnnouncementToday: false,
+        }))
+      } else {
+        announcement = currentState.bearLastAnnouncement
+        isRepeatedAfterDeath = true
+        setGameState(prev => ({ ...prev, bearReverseAnnouncementToday: false }))
+
+        // If Bear dies before any prior day announcement exists, seed one once and keep repeating it.
+        if (!announcement) {
+          const [leftIdx, , rightIdx] = getSeatGroupIndices(bearGlobalIdx, currentState.players.length)
+          const leftPlayer = currentState.players[leftIdx]
+          const rightPlayer = currentState.players[rightIdx]
+          const hasDanger = [leftPlayer, rightPlayer].some(p => p.isAlive && (p.role.includes('Sói') || p.isTransformed))
+          announcement = hasDanger ? 'CÓ' : 'KHÔNG'
+          setGameState(prev => ({
+            ...prev,
+            bearLastAnnouncement: announcement,
+            bearReverseAnnouncementToday: false,
+          }))
+        }
+      }
+
+      if (announcement) {
+        const reverseNote = reverseByBitch && bearPlayer.isAlive
+          ? '<br/><br/>HOST NOTE: Tín hiệu hôm nay bị đảo vì Bear bị Bitch chọn tối qua.'
+          : ''
+        const deathRepeatNote = isRepeatedAfterDeath
+          ? '<br/><br/>HOST NOTE: Đây là tín hiệu lặp lại từ ngày gần nhất.'
+          : ''
+        await showSimplePrompt({
+          title: '📢 THÔNG BÁO ĐẦU NGÀY',
+          subtitle: 'Cảm nhận nguy hiểm của Gau/Bear',
+          body: `Kết quả công bố: <strong>${announcement}</strong>.${reverseNote}${deathRepeatNote}`,
+          primaryText: 'Tiếp tục',
+        })
+        log(`Gau/Bear cảm nhận nguy hiểm: ${announcement}${isRepeatedAfterDeath ? ' (lặp lại)' : ''}${reverseByBitch && bearPlayer.isAlive ? ' [đã đảo bởi Bitch]' : ''}`)
+      }
+    }
 
     const alive = currentState.players.filter(p => p.isAlive)
     const choice = await awaitPlayerChoice({
@@ -990,7 +1153,7 @@ export default function WerewolfGame() {
                   </button>
                 </div>
                 <p className="text-xs text-white/30 leading-relaxed">
-                  Hỗ trợ tên vai trò tiếng Việt và tiếng Anh: Ma Sói / Soi / Wolf / Werewolf, Sói Con / Wolf Cub, Tiên Tri / Seer, Bảo Vệ / Bodyguard, Phù Thủy / Witch, Thợ Săn / Hunter, Già Làng / Elder, Cupid, 50/50, Dân Làng / Villager / Dan, Bitch, Gương / Mirror.
+                  Hỗ trợ tên vai trò tiếng Việt và tiếng Anh: Ma Sói / Soi / Wolf / Werewolf, Sói Con / Wolf Cub, Tiên Tri / Seer, Fox / Cao, Gau / Bear, Bảo Vệ / Bodyguard, Phù Thủy / Witch, Thợ Săn / Hunter, Già Làng / Elder, Cupid, 50/50, Dân Làng / Villager / Dan, Bitch, Gương / Mirror.
                 </p>
               </div>
             </div>
@@ -1045,6 +1208,7 @@ export default function WerewolfGame() {
                   {gameState.players.map((p, i) => {
                     let roleName = p.role
                     if (p.role === '50/50' && p.isAlive) roleName = `50/50 (${p.isTransformed ? 'Sói' : 'Dân Làng'})`
+                    if (p.role === 'Fox/Cao' && !p.foxCanScan) roleName += ' (Mất soi)'
                     if (p.linkedWith !== null) roleName += ' (Cặp đôi)'
                     if (p.markedByMirror) roleName += ' (Đã bị gương soi)'
                     return (
