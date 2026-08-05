@@ -423,6 +423,10 @@ export default function WerewolfGame() {
     })
 
     const state = stateRef.current
+    const getRoleDeadNames = (predicate: (p: Player) => boolean) => {
+      return state.players.filter(p => predicate(p) && !p.isAlive).map(p => p.name)
+    }
+
     const intentWolfBites: number[] = []
     let intentProtected: number | null = null
     let intentPoisoned: number | null = null
@@ -435,7 +439,12 @@ export default function WerewolfGame() {
 
     // ── Gương ──
     if (hasMirror) {
-      await showSimplePrompt({ title: 'GƯƠNG thức dậy', body: 'Những người khác nhắm mắt. Bấm OK để Gương mở mắt.', primaryText: 'Tiếp tục' })
+      const mirrorDead = getRoleDeadNames(p => p.role === 'Gương')
+      const mirrorWakeNotes: string[] = ['Những người khác nhắm mắt. Bấm OK để Gương mở mắt.']
+      if (mirrorDead.length) {
+        mirrorWakeNotes.push(`HOST NOTE: Gương đã chết (${mirrorDead.join(', ')}). Vẫn gọi vai để giữ bí mật.`)
+      }
+      await showSimplePrompt({ title: 'GƯƠNG thức dậy', body: mirrorWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
       if (mirrorIndex !== -1) {
         const alive = state.players.filter(p => p.isAlive)
         const mirrorAliveIdx = alive.findIndex(p => p === state.players[mirrorIndex])
@@ -462,7 +471,12 @@ export default function WerewolfGame() {
 
     // ── Bitch ──
     if (state.players.some(p => p.role === 'Bitch')) {
-      await showSimplePrompt({ title: 'BITCH thức dậy', body: 'Những người khác nhắm mắt.', primaryText: 'Tiếp tục' })
+      const bitchDead = getRoleDeadNames(p => p.role === 'Bitch')
+      const bitchWakeNotes: string[] = ['Những người khác nhắm mắt.']
+      if (bitchDead.length) {
+        bitchWakeNotes.push(`HOST NOTE: Bitch đã chết (${bitchDead.join(', ')}). Vẫn gọi vai để giữ bí mật.`)
+      }
+      await showSimplePrompt({ title: 'BITCH thức dậy', body: bitchWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
       const bitchIndex = state.players.findIndex(p => p.role === 'Bitch' && p.isAlive)
       if (bitchIndex !== -1) {
         const choice = await awaitPlayerChoice({ title: 'Ngủ với ai?', allowSkip: true, infoText: hasMirror ? 'Nếu có Gương, mục tiêu có thể bị phản chiếu.' : '' })
@@ -478,8 +492,20 @@ export default function WerewolfGame() {
 
     // ── Cupid (đêm đầu) ──
     if (state.players.some(p => p.role === 'Cupid') && nightNum === 1) {
-      await showSimplePrompt({ title: 'CUPID thức dậy', body: 'Những người khác nhắm mắt.', primaryText: 'Tiếp tục' })
+      const cupidDead = getRoleDeadNames(p => p.role === 'Cupid')
+      const cupidWakeNotes: string[] = ['Những người khác nhắm mắt.']
+      if (cupidDead.length) {
+        cupidWakeNotes.push(`HOST NOTE: Cupid đã chết (${cupidDead.join(', ')}). Vẫn gọi vai để giữ bí mật.`)
+      }
+      await showSimplePrompt({ title: 'CUPID thức dậy', body: cupidWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
       const cupidIndex = state.players.findIndex(p => p.role === 'Cupid' && p.isAlive)
+      if (cupidIndex !== -1 && cupidIndex === intentDisabledPlayer) {
+        await showSimplePrompt({
+          title: 'Cupid bị khóa kỹ năng',
+          body: `⚠️ ${state.players[cupidIndex].name} đã bị Bitch chọn tối nay nên KHÔNG được nối cặp.`,
+          primaryText: 'Tiếp tục',
+        })
+      }
       if (cupidIndex !== -1 && cupidIndex !== intentDisabledPlayer) {
         const firstChoice = await awaitPlayerChoice({ title: 'Nối người 1' })
         if (firstChoice !== null) {
@@ -504,7 +530,20 @@ export default function WerewolfGame() {
     }
 
     // ── Ma Sói ──
-    await showSimplePrompt({ title: 'MA SÓI thức dậy', body: 'Những người khác nhắm mắt.', primaryText: 'Tiếp tục' })
+    const wolfRoster = state.players.filter(p => p.role.includes('Sói') || p.isTransformed)
+    const deadWolves = wolfRoster.filter(p => !p.isAlive).map(p => p.name)
+    const disabledWolf = intentDisabledPlayer !== null
+      ? state.players[intentDisabledPlayer]
+      : null
+    const isDisabledWolf = !!disabledWolf && disabledWolf.isAlive && (disabledWolf.role.includes('Sói') || disabledWolf.isTransformed)
+    const wolfWakeNotes: string[] = ['Những người khác nhắm mắt.']
+    if (deadWolves.length) {
+      wolfWakeNotes.push(`HOST NOTE: Sói đã chết: ${deadWolves.join(', ')}. Vẫn gọi vai để giữ bí mật.`)
+    }
+    if (isDisabledWolf && disabledWolf) {
+      wolfWakeNotes.push(`⚠️ ${disabledWolf.name} bị Bitch chọn tối nay nên KHÔNG được tham gia cắn.`)
+    }
+    await showSimplePrompt({ title: 'MA SÓI thức dậy', body: wolfWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
     const activeWolves = state.players.filter(p => p.isAlive && (p.role.includes('Sói') || p.isTransformed) && state.players.indexOf(p) !== intentDisabledPlayer)
     if (activeWolves.length) {
       const num = state.extraKillNextNight ? 2 : 1
@@ -522,14 +561,31 @@ export default function WerewolfGame() {
           if (i === 0) firstBiteAliveIdx = choice
         }
       }
+    } else {
+      await showSimplePrompt({
+        title: 'Không có Sói hành động',
+        body: 'Đêm nay không có Sói nào có thể cắn (đã chết hoặc bị khóa kỹ năng).',
+        primaryText: 'Tiếp tục',
+      })
     }
     await showSimplePrompt({ title: 'Xong', body: 'Hãy nhắm mắt lại.', primaryText: 'Tiếp tục' })
 
     // ── Phù Thủy ──
     if (state.players.some(p => p.role === 'Phù Thủy')) {
-      await showSimplePrompt({ title: 'PHÙ THỦY thức dậy', body: 'Những người khác nhắm mắt.', primaryText: 'Tiếp tục' })
       const witchIndex = state.players.findIndex(p => p.role === 'Phù Thủy' && p.isAlive)
       const currentState = stateRef.current
+      const witchDead = getRoleDeadNames(p => p.role === 'Phù Thủy')
+      const witchWakeNotes: string[] = ['Những người khác nhắm mắt.']
+      if (witchDead.length) {
+        witchWakeNotes.push(`HOST NOTE: Phù Thủy đã chết (${witchDead.join(', ')}). Vẫn gọi vai để giữ bí mật.`)
+      }
+      if (witchIndex !== -1 && witchIndex === intentDisabledPlayer) {
+        witchWakeNotes.push(`⚠️ ${state.players[witchIndex].name} bị Bitch chọn tối nay nên KHÔNG được dùng kỹ năng.`)
+      }
+      if (witchIndex !== -1 && currentState.isCursed) {
+        witchWakeNotes.push(`⚠️ Già Làng đã nguyền: ${state.players[witchIndex].name} KHÔNG được dùng kỹ năng đêm nay.`)
+      }
+      await showSimplePrompt({ title: 'PHÙ THỦY thức dậy', body: witchWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
       const canAct = witchIndex !== -1 && witchIndex !== intentDisabledPlayer && !currentState.isCursed
       if (canAct) {
         const victim = intentWolfBites.length ? currentState.players[intentWolfBites[0]] : null
@@ -562,9 +618,20 @@ export default function WerewolfGame() {
 
     // ── Bảo Vệ ──
     if (state.players.some(p => p.role === 'Bảo Vệ')) {
-      await showSimplePrompt({ title: 'BẢO VỆ thức dậy', body: 'Những người khác nhắm mắt.', primaryText: 'Tiếp tục' })
       const bodyguardIndex = state.players.findIndex(p => p.role === 'Bảo Vệ' && p.isAlive)
       const currentState = stateRef.current
+      const bodyguardDead = getRoleDeadNames(p => p.role === 'Bảo Vệ')
+      const bodyguardWakeNotes: string[] = ['Những người khác nhắm mắt.']
+      if (bodyguardDead.length) {
+        bodyguardWakeNotes.push(`HOST NOTE: Bảo Vệ đã chết (${bodyguardDead.join(', ')}). Vẫn gọi vai để giữ bí mật.`)
+      }
+      if (bodyguardIndex !== -1 && bodyguardIndex === intentDisabledPlayer) {
+        bodyguardWakeNotes.push(`⚠️ ${state.players[bodyguardIndex].name} bị Bitch chọn tối nay nên KHÔNG được bảo vệ ai.`)
+      }
+      if (bodyguardIndex !== -1 && currentState.isCursed) {
+        bodyguardWakeNotes.push(`⚠️ Già Làng đã nguyền: ${state.players[bodyguardIndex].name} KHÔNG được dùng kỹ năng đêm nay.`)
+      }
+      await showSimplePrompt({ title: 'BẢO VỆ thức dậy', body: bodyguardWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
       if (bodyguardIndex !== -1 && bodyguardIndex !== intentDisabledPlayer && !currentState.isCursed) {
         const alive = currentState.players.filter(p => p.isAlive)
         const disabled: number[] = []
@@ -585,9 +652,20 @@ export default function WerewolfGame() {
 
     // ── Tiên Tri ──
     if (state.players.some(p => p.role === 'Tiên Tri')) {
-      await showSimplePrompt({ title: 'TIÊN TRI thức dậy', body: 'Những người khác nhắm mắt.', primaryText: 'Tiếp tục' })
       const seerIndex = state.players.findIndex(p => p.role === 'Tiên Tri' && p.isAlive)
       const currentState = stateRef.current
+      const seerDead = getRoleDeadNames(p => p.role === 'Tiên Tri')
+      const seerWakeNotes: string[] = ['Những người khác nhắm mắt.']
+      if (seerDead.length) {
+        seerWakeNotes.push(`HOST NOTE: Tiên Tri đã chết (${seerDead.join(', ')}). Vẫn gọi vai để giữ bí mật.`)
+      }
+      if (seerIndex !== -1 && seerIndex === intentDisabledPlayer) {
+        seerWakeNotes.push(`⚠️ ${state.players[seerIndex].name} bị Bitch chọn tối nay nên KHÔNG được soi.`)
+      }
+      if (seerIndex !== -1 && currentState.isCursed) {
+        seerWakeNotes.push(`⚠️ Già Làng đã nguyền: ${state.players[seerIndex].name} KHÔNG được dùng kỹ năng đêm nay.`)
+      }
+      await showSimplePrompt({ title: 'TIÊN TRI thức dậy', body: seerWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
       if (seerIndex !== -1 && seerIndex !== intentDisabledPlayer && !currentState.isCursed) {
         const choice = await awaitPlayerChoice({ title: 'Soi ai?' })
         if (choice !== null) {
@@ -605,9 +683,20 @@ export default function WerewolfGame() {
 
     // ── Thợ Săn ──
     if (state.players.some(p => p.role === 'Thợ Săn')) {
-      await showSimplePrompt({ title: 'THỢ SĂN thức dậy', body: 'Những người khác nhắm mắt.', primaryText: 'Tiếp tục' })
       const hunterIndex = state.players.findIndex(p => p.role === 'Thợ Săn' && p.isAlive)
       const currentState = stateRef.current
+      const hunterDead = getRoleDeadNames(p => p.role === 'Thợ Săn')
+      const hunterWakeNotes: string[] = ['Những người khác nhắm mắt.']
+      if (hunterDead.length) {
+        hunterWakeNotes.push(`HOST NOTE: Thợ Săn đã chết (${hunterDead.join(', ')}). Vẫn gọi vai để giữ bí mật.`)
+      }
+      if (hunterIndex !== -1 && hunterIndex === intentDisabledPlayer) {
+        hunterWakeNotes.push(`⚠️ ${state.players[hunterIndex].name} bị Bitch chọn tối nay nên KHÔNG được ngắm bắn.`)
+      }
+      if (hunterIndex !== -1 && currentState.isCursed) {
+        hunterWakeNotes.push(`⚠️ Già Làng đã nguyền: ${state.players[hunterIndex].name} KHÔNG được dùng kỹ năng đêm nay.`)
+      }
+      await showSimplePrompt({ title: 'THỢ SĂN thức dậy', body: hunterWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
       if (hunterIndex !== -1 && hunterIndex !== intentDisabledPlayer && !currentState.isCursed) {
         const choice = await awaitPlayerChoice({ title: 'Ngắm bắn ai?' })
         if (choice !== null) {
@@ -627,11 +716,53 @@ export default function WerewolfGame() {
 
     // ── Xử lý kết quả đêm ──
     setGameState(prev => ({ ...prev, lastProtected: intentProtected }))
+    const aliveBeforeNight = new Set(state.players.map((p, i) => (p.isAlive ? i : -1)).filter(i => i !== -1))
     const nightVictims: number[] = []
 
     setGameState(prev => {
       const players = [...prev.players.map(p => ({ ...p }))]
       const newLogs = [...prev.gameLogs]
+      let newExtraKill = prev.extraKillNextNight
+
+      const killNow = (idx: number, reason: string) => {
+        const victim = players[idx]
+        if (!victim || !victim.isAlive) return
+
+        victim.lives -= 1
+        if (victim.lives > 0) {
+          newLogs.push(`-> ${victim.name} bị tấn công (${reason}) nhưng vẫn còn mạng.`)
+          return
+        }
+
+        victim.isAlive = false
+        newLogs.push(`-> ${victim.name} (${victim.role}) ĐÃ CHẾT do ${reason}.`)
+
+        if (victim.role === 'Sói Con') newExtraKill = true
+
+        // Cupid chain death is unconditional once partner actually dies.
+        if (victim.linkedWith !== null && players[victim.linkedWith]?.isAlive) {
+          const linked = players[victim.linkedWith]
+          linked.isAlive = false
+          newLogs.push(`-> ${linked.name} (${linked.role}) ĐÃ CHẾT do Chết chùm (Cupid).`)
+          if (linked.role === 'Sói Con') newExtraKill = true
+        }
+
+        // Hunter drags immediately at night when not cursed.
+        if (victim.role === 'Thợ Săn' && !prev.isCursed && victim.hunterTarget !== null) {
+          const target = players[victim.hunterTarget]
+          if (target?.isAlive) {
+            target.isAlive = false
+            newLogs.push(`-> ${target.name} (${target.role}) ĐÃ CHẾT do Thợ Săn kéo.`)
+            if (target.linkedWith !== null && players[target.linkedWith]?.isAlive) {
+              const linked = players[target.linkedWith]
+              linked.isAlive = false
+              newLogs.push(`-> ${linked.name} (${linked.role}) ĐÃ CHẾT do Chết chùm (Cupid).`)
+              if (linked.role === 'Sói Con') newExtraKill = true
+            }
+            if (target.role === 'Sói Con') newExtraKill = true
+          }
+        }
+      }
 
       for (let i = 0; i < intentWolfBites.length; i++) {
         const v = intentWolfBites[i]
@@ -651,39 +782,23 @@ export default function WerewolfGame() {
 
       const unique = [...new Set(nightVictims)]
       for (const idx of unique) {
-        if (players[idx].isAlive) {
-          players[idx].lives -= 1
-          if (players[idx].lives <= 0) {
-            players[idx].isAlive = false
-            newLogs.push(`-> ${players[idx].name} (${players[idx].role}) ĐÃ CHẾT do Chết trong đêm.`)
-            // Handle linked deaths
-            if (players[idx].linkedWith !== null && players[players[idx].linkedWith!]?.isAlive) {
-              const linked = players[players[idx].linkedWith!]
-              linked.isAlive = false
-              newLogs.push(`-> ${linked.name} (${linked.role}) ĐÃ CHẾT do Chết chùm (Cupid).`)
-            }
-            // Handle wolf cub
-            if (players[idx].role === 'Sói Con') {
-              return { ...prev, players, gameLogs: newLogs, extraKillNextNight: true }
-            }
-          } else {
-            newLogs.push(`-> ${players[idx].name} bị tấn công nhưng vẫn còn mạng.`)
-          }
-        }
+        const reason = intentPoisoned !== null && idx === intentPoisoned ? 'Phù Thủy đầu độc' : 'Chết trong đêm'
+        killNow(idx, reason)
       }
 
-      return { ...prev, players, gameLogs: newLogs }
+      return { ...prev, players, gameLogs: newLogs, extraKillNextNight: newExtraKill }
     })
 
     // Wait for state to propagate
     await new Promise(r => setTimeout(r, 50))
     const updatedState = stateRef.current
-    const deadNames = updatedState.players.filter((p, i) => !p.isAlive && intentWolfBites.includes(i) || (intentPoisoned !== null && i === intentPoisoned && !p.isAlive))
-      .map(p => p.name)
+    const diedTonight = updatedState.players
+      .map((p, i) => ({ p, i }))
+      .filter(({ p, i }) => aliveBeforeNight.has(i) && !p.isAlive)
+      .map(({ p }) => p.name)
 
-    const allNightDead = updatedState.players.filter(p => !p.isAlive).map(p => p.name)
-    const sunriseBody = nightVictims.length
-      ? `Sáng nay làng phát hiện nạn nhân: ${[...new Set(nightVictims)].map(i => updatedState.players[i].name).join(', ')}`
+    const sunriseBody = diedTonight.length
+      ? `Sáng nay làng phát hiện nạn nhân: ${diedTonight.join(', ')}`
       : 'Một đêm bình yên, không ai qua đời.'
 
     await showSimplePrompt({
@@ -693,7 +808,7 @@ export default function WerewolfGame() {
       primaryText: 'Tiếp tục',
     })
 
-    if (nightVictims.length) {
+    if (diedTonight.length) {
       log(`☀️ Sáng nay, làng phát hiện nạn nhân qua đời.`)
     } else {
       log('☀️ Một đêm bình yên, không ai qua đời.')
