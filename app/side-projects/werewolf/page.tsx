@@ -1,8 +1,11 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
+import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { Be_Vietnam_Pro } from 'next/font/google'
+import { ArrowUp, ArrowDown } from 'lucide-react'
+import { createRolePool, getBearAnnouncement, getLivingNeighbors, getLivingSeatGroup, isWolfSide, roleOptions } from '@/lib/werewolf-rules'
 
 const beVietnam = Be_Vietnam_Pro({
   subsets: ['vietnamese', 'latin'],
@@ -41,11 +44,24 @@ interface GameState {
   pendingDeathMessages: string[]
 }
 
+interface NightSummary {
+  night: number
+  actions: string[]
+  players: Player[]
+  witchHeal: boolean
+  witchPoison: boolean
+  isCursed: boolean
+  extraKillNextNight: boolean
+  bearLastAnnouncement: 'CÓ' | 'KHÔNG' | null
+  bearReverseAnnouncementToday: boolean
+}
+
 type ModalConfig = {
   title: string
   subtitle?: string
-  body?: string
+  body?: ReactNode
   primaryText?: string
+  public?: boolean
   mode: 'simple'
   resolve: () => void
 } | {
@@ -62,68 +78,37 @@ type ModalConfig = {
   infoText?: string
   mode: 'confirm'
   resolve: (yes: boolean) => void
+} | {
+  title: string
+  mode: 'nightReview'
+  summary: NightSummary
+  resolve: () => void
 }
 
-// ─── Constants ───
-const roleMap = new Map<string, string>([
-  ['masoi', 'Ma Sói'], ['soi', 'Ma Sói'], ['wolf', 'Ma Sói'], ['werewolf', 'Ma Sói'],
-  ['soicon', 'Sói Con'], ['wolfcub', 'Sói Con'],
-  ['tientri', 'Tiên Tri'], ['seer', 'Tiên Tri'],
-  ['cao', 'Fox/Cao'], ['fox', 'Fox/Cao'],
-  ['gau', 'Gau/Bear'], ['bear', 'Gau/Bear'],
-  ['baove', 'Bảo Vệ'], ['bodyguard', 'Bảo Vệ'],
-  ['phuthuy', 'Phù Thủy'], ['witch', 'Phù Thủy'],
-  ['thosan', 'Thợ Săn'], ['hunter', 'Thợ Săn'],
-  ['gialang', 'Già Làng'], ['elder', 'Già Làng'],
-  ['cupid', 'Cupid'],
-  ['50/50', '50/50'],
-  ['danlang', 'Dân Làng'], ['dan', 'Dân Làng'], ['villager', 'Dân Làng'],
-  ['bitch', 'Bitch'],
-  ['guong', 'Gương'], ['mirror', 'Gương'],
-])
-
-function normalizeText(s: string): string {
-  return (s || '')
-    .toLowerCase()
-    .trim()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/[^a-z0-9/]+/g, '')
-}
-
-function parseRoles(raw: string, numPlayers: number): string[] {
-  const rolePool: string[] = []
-  const items = String(raw || '').split(',')
-  for (const item of items) {
-    const trimmed = item.trim()
-    if (!trimmed) continue
-    const match = trimmed.match(/^(\d+)\s*(.*)$/)
-    let count = 1
-    let roleName = trimmed
-    if (match) {
-      count = parseInt(match[1], 10)
-      roleName = match[2]
-    }
-    const canonical = roleMap.get(normalizeText(roleName))
-    if (canonical) {
-      for (let i = 0; i < count; i++) rolePool.push(canonical)
-    }
-  }
-  while (rolePool.length < numPlayers) rolePool.push('Dân Làng')
-  for (let i = rolePool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [rolePool[i], rolePool[j]] = [rolePool[j], rolePool[i]]
-  }
-  return rolePool.slice(0, numPlayers)
+function PromptLines({ lines }: { lines: string[] }) {
+  return <>{lines.map((line, index) => <p key={index} className="mb-2 last:mb-0">{line}</p>)}</>
 }
 
 // ─── Component ───
 export default function WerewolfGame() {
   const [numPlayers, setNumPlayers] = useState('')
   const [namesInput, setNamesInput] = useState('')
-  const [rolesInput, setRolesInput] = useState('')
-  const [gameState, setGameState] = useState<GameState>({
+  const [roleCounts, setRoleCounts] = useState<Record<string, number>>({})
+  const seatNames = namesInput.split('\n')
+  const selectedRoleCount = Object.values(roleCounts).reduce((total, count) => total + count, 0)
+  const updateSeat = (index: number, name: string) => {
+    const names = [...seatNames]
+    names[index] = name
+    setNamesInput(names.join('\n'))
+  }
+  const moveSeat = (index: number, direction: number) => {
+    const names = [...seatNames]
+    const next = index + direction
+    if (next < 0 || next >= names.length) return
+    ;[names[index], names[next]] = [names[next], names[index]]
+    setNamesInput(names.join('\n'))
+  }
+  const [gameState, setRenderedGameState] = useState<GameState>({
     players: [],
     nightCount: 0,
     witchHeal: true,
@@ -140,12 +125,16 @@ export default function WerewolfGame() {
     pendingDeathMessages: [],
   })
   const [modal, setModal] = useState<ModalConfig | null>(null)
+  const [nightSummaries, setNightSummaries] = useState<NightSummary[]>([])
   const logBoxRef = useRef<HTMLDivElement>(null)
   const stateRef = useRef(gameState)
+  const publicView = modal?.mode === 'simple' && modal.public
 
-  useEffect(() => {
-    stateRef.current = gameState
-  }, [gameState])
+  const setGameState = useCallback((update: GameState | ((previous: GameState) => GameState)) => {
+    const next = typeof update === 'function' ? update(stateRef.current) : update
+    stateRef.current = next
+    setRenderedGameState(next)
+  }, [])
 
   useEffect(() => {
     if (logBoxRef.current) {
@@ -155,11 +144,11 @@ export default function WerewolfGame() {
 
   const log = useCallback((message: string) => {
     setGameState(prev => ({ ...prev, gameLogs: [...prev.gameLogs, message] }))
-  }, [])
+  }, [setGameState])
 
-  const showSimplePrompt = useCallback(({ title, subtitle = '', body = '', primaryText = 'OK' }: { title: string; subtitle?: string; body?: string; primaryText?: string }): Promise<void> => {
+  const showSimplePrompt = useCallback(({ title, subtitle = '', body = '', primaryText = 'OK', public: isPublic = false }: { title: string; subtitle?: string; body?: ReactNode; primaryText?: string; public?: boolean }): Promise<void> => {
     return new Promise((resolve) => {
-      setModal({ title, subtitle, body, primaryText, mode: 'simple', resolve })
+      setModal({ title, subtitle, body, primaryText, public: isPublic, mode: 'simple', resolve })
     })
   }, [])
 
@@ -177,21 +166,12 @@ export default function WerewolfGame() {
     })
   }, [])
 
-  const getAlivePlayers = useCallback(() => {
-    return stateRef.current.players.filter(p => p.isAlive)
-  }, [])
-
   const reflect = (targetGlobalIdx: number, mirrorIndex: number, mirrorTargetGlobalIdx: number | null): number => {
     if (targetGlobalIdx === mirrorIndex && mirrorTargetGlobalIdx !== null) {
+      log(`Gương phản chiếu mục tiêu: ${stateRef.current.players[targetGlobalIdx].name} → ${stateRef.current.players[mirrorTargetGlobalIdx].name}`)
       return mirrorTargetGlobalIdx
     }
     return targetGlobalIdx
-  }
-
-  const getSeatGroupIndices = (centerIndex: number, totalPlayers: number): [number, number, number] => {
-    const left = (centerIndex - 1 + totalPlayers) % totalPlayers
-    const right = (centerIndex + 1) % totalPlayers
-    return [left, centerIndex, right]
   }
 
   const kill = useCallback((playerIndex: number, reason: string, isDaytime = false, silent = false, hideRole = false, currentNightDeathEvents?: number[]) => {
@@ -253,15 +233,16 @@ export default function WerewolfGame() {
         pendingHunterKill: newPendingHunterKill,
       }
     })
-  }, [])
+  }, [setGameState])
 
   const fillDemo = () => {
     setNumPlayers('8')
     setNamesInput('An\nThompson\nVinh\nQnhi\nTu\nMnhi\nDuy\nNam')
-    setRolesInput('2 Soi, 1 Witch, 1 Seer, 1 Bodyguard, 1 Hunter, 1 50/50, 1 gialang')
+    setRoleCounts({ 'Ma Sói': 2, 'Phù Thủy': 1, 'Fox/Cao': 1, 'Gau/Bear': 1, 'Bảo Vệ': 1, 'Thợ Săn': 1, '50/50': 1 })
   }
 
   const resetGame = () => {
+    setNightSummaries([])
     setGameState({
       players: [],
       nightCount: 0,
@@ -282,21 +263,34 @@ export default function WerewolfGame() {
   }
 
   const startGame = async () => {
-    const num = parseInt(numPlayers, 10)
-    if (!Number.isInteger(num) || num < 2) {
-      await showSimplePrompt({ title: 'Lỗi nhập liệu', body: 'Nhập tổng số người chơi hợp lệ (tối thiểu 2).', primaryText: 'OK' })
+    const num = Number(numPlayers)
+    if (!Number.isInteger(num) || num < 2 || num > 60) {
+      await showSimplePrompt({ title: 'Lỗi nhập liệu', body: 'Nhập tổng số người chơi hợp lệ (2–60).', primaryText: 'OK' })
       return
     }
 
-    const names = namesInput.split('\n').map(s => s.trim()).filter(Boolean)
-    while (names.length < num) names.push(`PLAYER_${names.length + 1}`)
+    const names = namesInput.trim().split('\n').map(name => name.trim())
+    if (names.length !== num || names.some(name => !name) || new Set(names.map(name => name.toLocaleLowerCase('vi'))).size !== num) {
+      await showSimplePrompt({ title: 'Lỗi danh sách', body: 'Cần đủ tên theo thứ tự ghế, không để trống hoặc trùng tên.' })
+      return
+    }
 
-    const rolePool = parseRoles(rolesInput, num)
+    let rolePool: string[]
+    try {
+      rolePool = createRolePool(roleCounts, num)
+    } catch (error) {
+      await showSimplePrompt({ title: 'Lỗi vai trò', body: error instanceof Error ? error.message : 'Vai trò không hợp lệ.' })
+      return
+    }
+    for (let index = rolePool.length - 1; index > 0; index--) {
+      const randomIndex = Math.floor(Math.random() * (index + 1))
+      ;[rolePool[index], rolePool[randomIndex]] = [rolePool[randomIndex], rolePool[index]]
+    }
     const players: Player[] = Array.from({ length: num }, (_, i) => {
       const role = rolePool[i]
       const side = role.includes('Sói') ? 'Sói' : (role === 'Gương' ? 'Gương' : 'Dân')
       return {
-        name: (names[i] || `PLAYER_${i + 1}`).trim().toUpperCase(),
+        name: names[i],
         role,
         side,
         isAlive: true,
@@ -326,23 +320,24 @@ export default function WerewolfGame() {
       phase: 'reveal',
       pendingDeathMessages: [],
     }))
+    setNightSummaries([])
 
     // Role reveal
     for (const p of players) {
       await showSimplePrompt({
         title: `🔔 Mời ${p.name} xem vai`,
         subtitle: 'Những người khác vui lòng nhắm mắt.',
-        body: `<strong>Vai của bạn là:</strong> <span style="color:#f39c12;font-size:22px">${p.role.toUpperCase()}</span><br/><br/>Ghi nhớ vai và bấm OK để sang người tiếp theo.`,
+        body: <><strong>Vai của bạn là:</strong> <span className="text-amber-400 text-xl">{p.role.toUpperCase()}</span></>,
         primaryText: 'Tôi đã xem',
       })
     }
 
     // Start game loop
     setGameState(prev => ({ ...prev, phase: 'playing' }))
-    await gameLoop(players)
+    await gameLoop()
   }
 
-  const gameLoop = async (initialPlayers: Player[]) => {
+  const gameLoop = async () => {
     let looping = true
     while (looping) {
       if (checkVictory()) { looping = false; break }
@@ -421,7 +416,7 @@ export default function WerewolfGame() {
 
     if (victoryMsg) {
       setGameState(prev => ({ ...prev, running: false, phase: 'ended', gameLogs: [...prev.gameLogs, `\n${victoryMsg}`] }))
-      showSimplePrompt({ title: 'KẾT THÚC TRẬN ĐẤU', body: `<div style="text-align:center;font-size:22px;padding:16px 0">${victoryMsg}</div>`, primaryText: 'Xem tổng kết' })
+      showSimplePrompt({ title: 'KẾT THÚC TRẬN ĐẤU', body: victoryMsg, primaryText: 'Xem tổng kết', public: true })
       return true
     }
     return false
@@ -429,6 +424,7 @@ export default function WerewolfGame() {
 
   const nightPhase = async () => {
     const st = stateRef.current
+    const nightLogStart = st.gameLogs.length
     const nightNum = st.nightCount + 1
     setGameState(prev => ({ ...prev, nightCount: nightNum }))
     log(`\n--- ĐÊM ${nightNum} ---`)
@@ -462,7 +458,7 @@ export default function WerewolfGame() {
       if (mirrorDead.length) {
         mirrorWakeNotes.push(`HOST NOTE: Gương đã chết (${mirrorDead.join(', ')}). Vẫn gọi vai để giữ bí mật.`)
       }
-      await showSimplePrompt({ title: 'GƯƠNG thức dậy', body: mirrorWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
+      await showSimplePrompt({ title: 'GƯƠNG thức dậy', body: <PromptLines lines={mirrorWakeNotes} />, primaryText: 'Tiếp tục' })
       if (mirrorIndex !== -1) {
         const alive = state.players.filter(p => p.isAlive)
         const mirrorAliveIdx = alive.findIndex(p => p === state.players[mirrorIndex])
@@ -479,7 +475,7 @@ export default function WerewolfGame() {
             players[mirrorTargetIndex!].markedByMirror = true
             return { ...prev, players }
           })
-          const markedCount = stateRef.current.players.filter(p => p.markedByMirror).length + 1
+          const markedCount = stateRef.current.players.filter(p => p.markedByMirror).length
           const totalAlive = stateRef.current.players.filter(p => p.isAlive).length
           log(`Gương soi ${alive[choice].name} (${markedCount}/${totalAlive} người đã bị soi)`)
         }
@@ -494,7 +490,7 @@ export default function WerewolfGame() {
       if (bitchDead.length) {
         bitchWakeNotes.push(`HOST NOTE: Bitch đã chết (${bitchDead.join(', ')}). Vẫn gọi vai để giữ bí mật.`)
       }
-      await showSimplePrompt({ title: 'BITCH thức dậy', body: bitchWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
+      await showSimplePrompt({ title: 'BITCH thức dậy', body: <PromptLines lines={bitchWakeNotes} />, primaryText: 'Tiếp tục' })
       const bitchIndex = state.players.findIndex(p => p.role === 'Bitch' && p.isAlive)
       if (bitchIndex !== -1) {
         const choice = await awaitPlayerChoice({ title: 'Ngủ với ai?', allowSkip: true, infoText: hasMirror ? 'Nếu có Gương, mục tiêu có thể bị phản chiếu.' : '' })
@@ -502,7 +498,9 @@ export default function WerewolfGame() {
           const alive = state.players.filter(p => p.isAlive)
           const globalIdx = state.players.indexOf(alive[choice])
           intentDisabledPlayer = reflect(globalIdx, mirrorIndex, mirrorTargetIndex)
-          log(`Bitch ngủ với ${alive[choice].name}`)
+          log(`Bitch chọn ${alive[choice].name}; mục tiêu thực tế: ${stateRef.current.players[intentDisabledPlayer].name}`)
+        } else {
+          log('Bitch bỏ qua hành động.')
         }
       }
       await showSimplePrompt({ title: 'Xong', body: 'Hãy nhắm mắt lại.', primaryText: 'Tiếp tục' })
@@ -515,7 +513,7 @@ export default function WerewolfGame() {
       if (cupidDead.length) {
         cupidWakeNotes.push(`HOST NOTE: Cupid đã chết (${cupidDead.join(', ')}). Vẫn gọi vai để giữ bí mật.`)
       }
-      await showSimplePrompt({ title: 'CUPID thức dậy', body: cupidWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
+      await showSimplePrompt({ title: 'CUPID thức dậy', body: <PromptLines lines={cupidWakeNotes} />, primaryText: 'Tiếp tục' })
       const cupidIndex = state.players.findIndex(p => p.role === 'Cupid' && p.isAlive)
       if (cupidIndex !== -1 && cupidIndex === intentDisabledPlayer) {
         await showSimplePrompt({
@@ -540,7 +538,7 @@ export default function WerewolfGame() {
               players[p2Final].linkedWith = p1Final
               return { ...prev, players }
             })
-            log(`Cupid nối ${alive[firstChoice].name} và ${alive[secondChoice].name}`)
+            log(`Cupid chọn ${alive[firstChoice].name} và ${alive[secondChoice].name}; nối thực tế: ${stateRef.current.players[p1Final].name} và ${stateRef.current.players[p2Final].name}`)
           }
         }
       }
@@ -561,7 +559,7 @@ export default function WerewolfGame() {
     if (isDisabledWolf && disabledWolf) {
       wolfWakeNotes.push(`⚠️ ${disabledWolf.name} bị Bitch chọn tối nay nên KHÔNG được tham gia cắn.`)
     }
-    await showSimplePrompt({ title: 'MA SÓI thức dậy', body: wolfWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
+    await showSimplePrompt({ title: 'MA SÓI thức dậy', body: <PromptLines lines={wolfWakeNotes} />, primaryText: 'Tiếp tục' })
     const activeWolves = state.players.filter(p => p.isAlive && (p.role.includes('Sói') || p.isTransformed) && state.players.indexOf(p) !== intentDisabledPlayer)
     if (activeWolves.length) {
       const num = state.extraKillNextNight ? 2 : 1
@@ -575,11 +573,12 @@ export default function WerewolfGame() {
           const globalIdx = stateRef.current.players.indexOf(alive[choice])
           const res = reflect(globalIdx, mirrorIndex, mirrorTargetIndex)
           intentWolfBites.push(res)
-          log(`Sói cắn ${alive[choice].name}`)
+          log(`Sói chọn cắn ${alive[choice].name}; mục tiêu thực tế: ${stateRef.current.players[res].name}`)
           if (i === 0) firstBiteAliveIdx = choice
         }
       }
     } else {
+      log('Sói không cắn: không còn Sói sống có thể hành động.')
       await showSimplePrompt({
         title: 'Không có Sói hành động',
         body: 'Đêm nay không có Sói nào có thể cắn (đã chết hoặc bị khóa kỹ năng).',
@@ -603,7 +602,7 @@ export default function WerewolfGame() {
       if (witchIndex !== -1 && currentState.isCursed) {
         witchWakeNotes.push(`⚠️ Già Làng đã nguyền: ${state.players[witchIndex].name} KHÔNG được dùng kỹ năng đêm nay.`)
       }
-      await showSimplePrompt({ title: 'PHÙ THỦY thức dậy', body: witchWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
+      await showSimplePrompt({ title: 'PHÙ THỦY thức dậy', body: <PromptLines lines={witchWakeNotes} />, primaryText: 'Tiếp tục' })
       const canAct = witchIndex !== -1 && witchIndex !== intentDisabledPlayer && !currentState.isCursed
       if (canAct) {
         const victim = intentWolfBites.length ? currentState.players[intentWolfBites[0]] : null
@@ -615,6 +614,8 @@ export default function WerewolfGame() {
               intentWitchSaved = true
               setGameState(prev => ({ ...prev, witchHeal: false }))
               log(`Phù thủy cứu ${victim.name}`)
+            } else {
+              log(`Phù thủy không cứu ${victim.name}.`)
             }
           }
         } else {
@@ -627,7 +628,9 @@ export default function WerewolfGame() {
             const globalIdx = stateRef.current.players.indexOf(alive[choice])
             intentPoisoned = reflect(globalIdx, mirrorIndex, mirrorTargetIndex)
             setGameState(prev => ({ ...prev, witchPoison: false }))
-            log(`Phù thủy độc ${alive[choice].name}`)
+            log(`Phù thủy chọn độc ${alive[choice].name}; mục tiêu thực tế: ${stateRef.current.players[intentPoisoned].name}`)
+          } else {
+            log('Phù thủy không dùng bình độc.')
           }
         }
       }
@@ -649,7 +652,7 @@ export default function WerewolfGame() {
       if (bodyguardIndex !== -1 && currentState.isCursed) {
         bodyguardWakeNotes.push(`⚠️ Già Làng đã nguyền: ${state.players[bodyguardIndex].name} KHÔNG được dùng kỹ năng đêm nay.`)
       }
-      await showSimplePrompt({ title: 'BẢO VỆ thức dậy', body: bodyguardWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
+      await showSimplePrompt({ title: 'BẢO VỆ thức dậy', body: <PromptLines lines={bodyguardWakeNotes} />, primaryText: 'Tiếp tục' })
       if (bodyguardIndex !== -1 && bodyguardIndex !== intentDisabledPlayer && !currentState.isCursed) {
         const alive = currentState.players.filter(p => p.isAlive)
         const disabled: number[] = []
@@ -662,7 +665,7 @@ export default function WerewolfGame() {
           const globalIdx = currentState.players.indexOf(alive[choice])
           const res = reflect(globalIdx, mirrorIndex, mirrorTargetIndex)
           intentProtected = res
-          log(`Bảo vệ gác cho ${alive[choice].name}`)
+          log(`Bảo vệ chọn ${alive[choice].name}; bảo vệ thực tế: ${stateRef.current.players[res].name}`)
         }
       }
       await showSimplePrompt({ title: 'Xong', body: 'Hãy nhắm mắt lại.', primaryText: 'Tiếp tục' })
@@ -683,7 +686,7 @@ export default function WerewolfGame() {
       if (seerIndex !== -1 && currentState.isCursed) {
         seerWakeNotes.push(`⚠️ Già Làng đã nguyền: ${state.players[seerIndex].name} KHÔNG được dùng kỹ năng đêm nay.`)
       }
-      await showSimplePrompt({ title: 'TIÊN TRI thức dậy', body: seerWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
+      await showSimplePrompt({ title: 'TIÊN TRI thức dậy', body: <PromptLines lines={seerWakeNotes} />, primaryText: 'Tiếp tục' })
       if (seerIndex !== -1 && seerIndex !== intentDisabledPlayer && !currentState.isCursed) {
         const choice = await awaitPlayerChoice({ title: 'Soi ai?' })
         if (choice !== null) {
@@ -693,7 +696,7 @@ export default function WerewolfGame() {
           const resPlayer = currentState.players[res]
           const resSide = (resPlayer.role.includes('Sói') || resPlayer.isTransformed) ? 'SÓI' : 'DÂN'
           await showSimplePrompt({ title: 'Kết quả soi', subtitle: `Kết quả soi ${alive[choice].name}: ${resSide}`, primaryText: 'Tiếp tục' })
-          log(`Tiên tri soi ${alive[choice].name} ra ${resSide}`)
+          log(`Tiên tri chọn ${alive[choice].name}; soi thực tế ${resPlayer.name}: ${resSide}`)
         }
       }
       await showSimplePrompt({ title: 'Xong', body: 'Hãy nhắm mắt lại.', primaryText: 'Tiếp tục' })
@@ -728,7 +731,7 @@ export default function WerewolfGame() {
         foxWakeNotes.push(`⚠️ ${lockedFoxes.join(', ')} đã nhận kết quả KHÔNG trước đó nên không thể soi tiếp ở các đêm sau.`)
       }
 
-      await showSimplePrompt({ title: 'FOX/CAO thức dậy', body: foxWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
+      await showSimplePrompt({ title: 'FOX/CAO thức dậy', body: <PromptLines lines={foxWakeNotes} />, primaryText: 'Tiếp tục' })
 
       if (!currentState.isCursed) {
         for (const fox of aliveFoxes) {
@@ -739,7 +742,7 @@ export default function WerewolfGame() {
           await showSimplePrompt({ title: `Mời ${foxPlayer.name}`, body: 'Chọn 1 người để soi nhóm 3 người gồm trái - giữa - phải theo vị trí ngồi.', primaryText: 'Tiếp tục' })
 
           const aliveNow = stateRef.current.players.filter(p => p.isAlive)
-          const foxAliveIdx = aliveNow.findIndex(p => p === foxPlayer)
+          const foxAliveIdx = aliveNow.findIndex(p => p === stateRef.current.players[fox.i])
           const choice = await awaitPlayerChoice({
             title: 'Fox/Cao soi ai?',
             subtitle: 'Kết quả: CÓ nếu trong nhóm 3 người theo vị trí ngồi có ít nhất 1 phe Sói; KHÔNG nếu cả 3 đều không thuộc phe Sói.',
@@ -750,9 +753,8 @@ export default function WerewolfGame() {
             const aliveAfterChoice = stateRef.current.players.filter(p => p.isAlive)
             const selectedGlobalIdx = stateRef.current.players.indexOf(aliveAfterChoice[choice])
             const resolvedTarget = reflect(selectedGlobalIdx, mirrorIndex, mirrorTargetIndex)
-            const [leftIdx, centerIdx, rightIdx] = getSeatGroupIndices(resolvedTarget, stateRef.current.players.length)
-            const group = [leftIdx, centerIdx, rightIdx].map(idx => stateRef.current.players[idx])
-            const hasWerewolfSide = group.some(p => p.role.includes('Sói') || p.isTransformed)
+            const group = getLivingSeatGroup(stateRef.current.players, resolvedTarget).map(idx => stateRef.current.players[idx])
+            const hasWerewolfSide = group.some(isWolfSide)
 
             if (!hasWerewolfSide) {
               setGameState(prev => {
@@ -772,7 +774,7 @@ export default function WerewolfGame() {
               primaryText: 'Tiếp tục',
             })
 
-            log(`Fox/Cao ${foxPlayer.name} soi ${aliveAfterChoice[choice].name} -> ${answer}`)
+            log(`Fox/Cao ${foxPlayer.name} chọn ${aliveAfterChoice[choice].name}; tâm thực tế: ${stateRef.current.players[resolvedTarget].name}; nhóm sống: ${group.map(player => player.name).join(' — ')} → ${answer}${hasWerewolfSide ? '' : '; mất kỹ năng soi từ đêm sau'}`)
           }
         }
       }
@@ -795,7 +797,7 @@ export default function WerewolfGame() {
       if (hunterIndex !== -1 && currentState.isCursed) {
         hunterWakeNotes.push(`⚠️ Già Làng đã nguyền: ${state.players[hunterIndex].name} KHÔNG được dùng kỹ năng đêm nay.`)
       }
-      await showSimplePrompt({ title: 'THỢ SĂN thức dậy', body: hunterWakeNotes.join('<br/><br/>'), primaryText: 'Tiếp tục' })
+      await showSimplePrompt({ title: 'THỢ SĂN thức dậy', body: <PromptLines lines={hunterWakeNotes} />, primaryText: 'Tiếp tục' })
       if (hunterIndex !== -1 && hunterIndex !== intentDisabledPlayer && !currentState.isCursed) {
         const choice = await awaitPlayerChoice({ title: 'Ngắm bắn ai?' })
         if (choice !== null) {
@@ -807,7 +809,7 @@ export default function WerewolfGame() {
             players[hunterIndex].hunterTarget = res
             return { ...prev, players }
           })
-          log(`Thợ săn ngắm ${alive[choice].name}`)
+          log(`Thợ săn chọn ${alive[choice].name}; ngắm thực tế: ${stateRef.current.players[res].name}`)
         }
       }
       await showSimplePrompt({ title: 'Xong', body: 'Hãy nhắm mắt lại.', primaryText: 'Tiếp tục' })
@@ -816,6 +818,26 @@ export default function WerewolfGame() {
     // ── Xử lý kết quả đêm ──
     const bearIndex = state.players.findIndex(p => p.role === 'Gau/Bear')
     const bearWasDisabledTonight = bearIndex !== -1 && intentDisabledPlayer === bearIndex
+    for (const role of roleOptions) {
+      for (const player of state.players.filter(player => player.role === role.name)) {
+        const playerIndex = state.players.indexOf(player)
+        if (!player.isAlive) {
+          log(`${player.name} (${role.name}): đã chết, không hành động.`)
+        } else if (role.name === 'Cupid' && nightNum !== 1) {
+          log(`${player.name} (Cupid): chỉ nối cặp ở đêm đầu.`)
+        } else if (role.name === 'Fox/Cao' && !player.foxCanScan) {
+          log(`${player.name} (Fox/Cao): đã mất kỹ năng soi.`)
+        } else if (playerIndex === intentDisabledPlayer && !['Gương', 'Gau/Bear', 'Già Làng', 'Dân Làng'].includes(role.name)) {
+          log(`${player.name} (${role.name}): bị Bitch khóa kỹ năng đêm này.`)
+        } else if (state.isCursed && ['Phù Thủy', 'Bảo Vệ', 'Tiên Tri', 'Fox/Cao', 'Thợ Săn'].includes(role.name)) {
+          log(`${player.name} (${role.name}): mất kỹ năng do nguyền Già Làng.`)
+        } else if (role.name === 'Gau/Bear') {
+          log(`${player.name} (Gau/Bear): tín hiệu công bố sau bình minh${bearWasDisabledTonight ? ', bị Bitch đảo hôm nay' : ''}.`)
+        } else if (['Dân Làng', 'Già Làng', '50/50'].includes(role.name) && !player.isTransformed) {
+          log(`${player.name} (${role.name}): không có lựa chọn chủ động ban đêm.`)
+        }
+      }
+    }
     setGameState(prev => ({
       ...prev,
       lastProtected: intentProtected,
@@ -894,13 +916,27 @@ export default function WerewolfGame() {
       return { ...prev, players, gameLogs: newLogs, extraKillNextNight: newExtraKill }
     })
 
-    // Wait for state to propagate
-    await new Promise(r => setTimeout(r, 50))
     const updatedState = stateRef.current
     const diedTonight = updatedState.players
       .map((p, i) => ({ p, i }))
       .filter(({ p, i }) => aliveBeforeNight.has(i) && !p.isAlive)
       .map(({ p }) => p.name)
+
+    const summary: NightSummary = {
+      night: nightNum,
+      actions: updatedState.gameLogs.slice(nightLogStart),
+      players: updatedState.players.map(player => ({ ...player })),
+      witchHeal: updatedState.witchHeal,
+      witchPoison: updatedState.witchPoison,
+      isCursed: updatedState.isCursed,
+      extraKillNextNight: updatedState.extraKillNextNight,
+      bearLastAnnouncement: updatedState.bearLastAnnouncement,
+      bearReverseAnnouncementToday: updatedState.bearReverseAnnouncementToday,
+    }
+    setNightSummaries(previous => [...previous, summary])
+    await new Promise<void>(resolve => {
+      setModal({ title: `Tổng kết đêm ${nightNum} · Chỉ quản trò`, mode: 'nightReview', summary, resolve })
+    })
 
     const sunriseBody = diedTonight.length
       ? `Sáng nay làng phát hiện nạn nhân: ${diedTonight.join(', ')}`
@@ -911,6 +947,7 @@ export default function WerewolfGame() {
       subtitle: 'Mời mọi người mở mắt!',
       body: sunriseBody,
       primaryText: 'Tiếp tục',
+      public: true,
     })
 
     if (diedTonight.length) {
@@ -918,71 +955,29 @@ export default function WerewolfGame() {
     } else {
       log('☀️ Một đêm bình yên, không ai qua đời.')
     }
+    await announceBear()
+  }
+
+  const announceBear = async () => {
+    const currentState = stateRef.current
+    const result = getBearAnnouncement(currentState.players, currentState.bearLastAnnouncement, currentState.bearReverseAnnouncementToday)
+    if (!result) return
+    setGameState(prev => ({ ...prev, bearLastAnnouncement: result.signal, bearReverseAnnouncementToday: false }))
+    await showSimplePrompt({
+      title: '📢 THÔNG BÁO ĐẦU NGÀY',
+      subtitle: 'Cảm nhận nguy hiểm của Gau/Bear',
+      body: result.signal === 'CÓ' ? 'Gấu phát hiện có nguy hiểm' : 'Gấu không phát hiện nguy hiểm',
+      primaryText: 'Tiếp tục',
+      public: true,
+    })
+    log(`Gau/Bear cảm nhận nguy hiểm: ${result.signal}${result.repeated ? ' (lặp lại)' : ''}${result.inverted ? ' [đã đảo bởi Bitch]' : ''}`)
+
   }
 
   const dayPhase = async () => {
     const currentState = stateRef.current
     log(`\n--- BAN NGÀY ---`)
     setGameState(prev => ({ ...prev, pendingDeathMessages: [] }))
-
-    // ── Gau/Bear danger announcement at the beginning of each day ──
-    const bearGlobalIdx = currentState.players.findIndex(p => p.role === 'Gau/Bear')
-    if (bearGlobalIdx !== -1) {
-      const bearPlayer = currentState.players[bearGlobalIdx]
-      const reverseByBitch = currentState.bearReverseAnnouncementToday
-      let announcement: 'CÓ' | 'KHÔNG' | null = null
-      let isRepeatedAfterDeath = false
-
-      if (bearPlayer.isAlive) {
-        const [leftIdx, , rightIdx] = getSeatGroupIndices(bearGlobalIdx, currentState.players.length)
-        const leftPlayer = currentState.players[leftIdx]
-        const rightPlayer = currentState.players[rightIdx]
-        const hasDanger = [leftPlayer, rightPlayer].some(p => p.isAlive && (p.role.includes('Sói') || p.isTransformed))
-        const finalSignal = reverseByBitch ? !hasDanger : hasDanger
-        announcement = finalSignal ? 'CÓ' : 'KHÔNG'
-
-        setGameState(prev => ({
-          ...prev,
-          bearLastAnnouncement: announcement,
-          bearReverseAnnouncementToday: false,
-        }))
-      } else {
-        announcement = currentState.bearLastAnnouncement
-        isRepeatedAfterDeath = true
-        setGameState(prev => ({ ...prev, bearReverseAnnouncementToday: false }))
-
-        // If Bear dies before any prior day announcement exists, seed one once and keep repeating it.
-        if (!announcement) {
-          const [leftIdx, , rightIdx] = getSeatGroupIndices(bearGlobalIdx, currentState.players.length)
-          const leftPlayer = currentState.players[leftIdx]
-          const rightPlayer = currentState.players[rightIdx]
-          const hasDanger = [leftPlayer, rightPlayer].some(p => p.isAlive && (p.role.includes('Sói') || p.isTransformed))
-          announcement = hasDanger ? 'CÓ' : 'KHÔNG'
-          setGameState(prev => ({
-            ...prev,
-            bearLastAnnouncement: announcement,
-            bearReverseAnnouncementToday: false,
-          }))
-        }
-      }
-
-      if (announcement) {
-        const reverseNote = reverseByBitch && bearPlayer.isAlive
-          ? '<br/><br/>HOST NOTE: Tín hiệu hôm nay bị đảo vì Bear bị Bitch chọn tối qua.'
-          : ''
-        const deathRepeatNote = isRepeatedAfterDeath
-          ? '<br/><br/>HOST NOTE: Đây là tín hiệu lặp lại từ ngày gần nhất.'
-          : ''
-        await showSimplePrompt({
-          title: '📢 THÔNG BÁO ĐẦU NGÀY',
-          subtitle: 'Cảm nhận nguy hiểm của Gau/Bear',
-          body: `Kết quả công bố: <strong>${announcement}</strong>.${reverseNote}${deathRepeatNote}`,
-          primaryText: 'Tiếp tục',
-        })
-        log(`Gau/Bear cảm nhận nguy hiểm: ${announcement}${isRepeatedAfterDeath ? ' (lặp lại)' : ''}${reverseByBitch && bearPlayer.isAlive ? ' [đã đảo bởi Bitch]' : ''}`)
-      }
-    }
-
     const alive = currentState.players.filter(p => p.isAlive)
     const choice = await awaitPlayerChoice({
       title: 'BAN NGÀY: Treo cổ ai?',
@@ -996,14 +991,14 @@ export default function WerewolfGame() {
       const globalIdx = stateRef.current.players.indexOf(chosenPlayer)
       log(`BAN NGÀY: Làng treo cổ ${chosenPlayer.name}`)
       kill(globalIdx, 'Treo cổ', true, false, true)
-      await new Promise(r => setTimeout(r, 50))
 
       const msgs = stateRef.current.pendingDeathMessages
       if (msgs.length) {
         await showSimplePrompt({
           title: '💀 Kết quả treo cổ',
-          body: msgs.join('<br/>'),
+          body: <PromptLines lines={msgs} />,
           primaryText: 'Tiếp tục',
+          public: true,
         })
       }
     } else {
@@ -1011,16 +1006,14 @@ export default function WerewolfGame() {
     }
 
     // Handle pending hunter kill
-    await new Promise(r => setTimeout(r, 50))
     const afterState = stateRef.current
     if (afterState.pendingHunterKill !== null) {
       const hk = afterState.pendingHunterKill
       setGameState(prev => ({ ...prev, pendingHunterKill: null }))
       kill(hk, 'Thợ Săn kéo', true, false, false)
-      await new Promise(r => setTimeout(r, 50))
       const hunterMsgs = stateRef.current.pendingDeathMessages
       if (hunterMsgs.length) {
-        await showSimplePrompt({ title: '🔫 Thợ Săn kéo theo!', body: hunterMsgs.join('<br/>'), primaryText: 'Tiếp tục' })
+        await showSimplePrompt({ title: '🔫 Thợ Săn kéo theo!', body: <PromptLines lines={hunterMsgs} />, primaryText: 'Tiếp tục' })
       }
     }
   }
@@ -1028,15 +1021,45 @@ export default function WerewolfGame() {
   // ─── Render Modal ───
   const renderModal = () => {
     if (!modal) return null
+    const bearReview = modal.mode === 'nightReview'
+      ? getBearAnnouncement(modal.summary.players, modal.summary.bearLastAnnouncement, modal.summary.bearReverseAnnouncementToday)
+      : null
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-        <div className="w-full max-w-[720px] bg-gradient-to-b from-[#141930]/98 to-[#0a0e1a]/98 border border-red-900/20 rounded-2xl shadow-2xl p-6 animate-slideIn">
-          <h2 className="text-xl font-bold text-amber-100 mb-2 font-[family-name:var(--font-be-vietnam)] tracking-wide">{modal.title}</h2>
-          {modal.subtitle && <p className="text-white/50 text-sm mb-3">{modal.subtitle}</p>}
+        <div role="dialog" aria-modal="true" aria-label={modal.title} className="w-full max-w-[720px] max-h-[90dvh] overflow-y-auto bg-[#141930] border border-red-900/20 rounded-lg shadow-2xl p-6 animate-slideIn">
+          <h2 className="text-xl font-bold text-amber-100 mb-2 font-[family-name:var(--font-be-vietnam)] break-words">{modal.title}</h2>
+          {modal.mode !== 'nightReview' && modal.subtitle && <p className="text-white/50 text-sm mb-3">{modal.subtitle}</p>}
+
+          {modal.mode === 'nightReview' && (
+            <>
+              <div className="max-h-[65dvh] overflow-y-auto text-white/80 text-sm space-y-4 mb-4">
+                <h3 className="font-semibold text-amber-100">Hành động và kết quả</h3>
+                <ol className="space-y-2 list-decimal pl-6 break-words">
+                  {modal.summary.actions.map((action, index) => <li key={index}>{action}</li>)}
+                </ol>
+                <div className="border-t border-white/10 pt-3 space-y-1">
+                  <p>Bình cứu: {modal.summary.witchHeal ? 'Còn' : 'Hết'} · Bình độc: {modal.summary.witchPoison ? 'Còn' : 'Hết'}</p>
+                  <p>Nguyền Già Làng: {modal.summary.isCursed ? 'Có' : 'Không'} · Cắn đôi đêm sau: {modal.summary.extraKillNextNight ? 'Có' : 'Không'}</p>
+                </div>
+                <h3 className="font-semibold text-amber-100">Vòng người còn sống</h3>
+                <p className="break-words">{modal.summary.players.map((player, index) => player.isAlive ? `#${index + 1} ${player.name}` : null).filter(Boolean).join(' → ') || 'Không còn người sống'} ↻</p>
+                {bearReview && <p className="border-t border-white/10 pt-3 break-words">Gau/Bear · Hàng xóm sống: {bearReview.neighbors.map(index => modal.summary.players[index].name).join(' / ') || 'Không có'} · Công bố: {bearReview.signal}{bearReview.inverted ? ' (đảo bởi Bitch)' : ''}{bearReview.repeated ? ' (tín hiệu giữ lại sau khi Bear chết)' : ''}</p>}
+                <ul className="space-y-2">
+                  {modal.summary.players.map((player, index) => (
+                    <li key={index} className="border-b border-white/10 pb-2 break-words">
+                      #{index + 1} {player.name} · {player.role}{player.isTransformed ? ' (hóa Sói)' : ''} · {player.isAlive ? `Sống, ${player.lives} mạng` : 'Đã chết'}
+                      {player.isAlive && <div className="text-white/50">Hàng xóm: {getLivingNeighbors(modal.summary.players, index).map(neighbor => modal.summary.players[neighbor].name).join(' / ') || 'Không có'}</div>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <button onClick={() => { setModal(null); modal.resolve() }} className="px-5 py-2.5 bg-red-800 text-white font-bold text-sm rounded-lg">{gameState.running ? 'Đã kiểm tra · Công bố bình minh' : 'Đóng'}</button>
+            </>
+          )}
 
           {modal.mode === 'simple' && (
             <>
-              {modal.body && <div className="text-white/80 text-sm leading-relaxed p-4 rounded-xl bg-white/5 border border-white/5 mb-4" dangerouslySetInnerHTML={{ __html: modal.body }} />}
+              {modal.body && <div className="text-white/80 text-sm leading-relaxed p-4 rounded-lg bg-white/5 border border-white/5 mb-4 break-words">{modal.body}</div>}
               <button
                 onClick={() => { setModal(null); modal.resolve() }}
                 className="px-5 py-2.5 bg-gradient-to-r from-red-800 to-red-700 text-white font-bold text-sm rounded-xl hover:from-red-700 hover:to-red-600 transition-all"
@@ -1055,7 +1078,7 @@ export default function WerewolfGame() {
                     key={i}
                     disabled={p.disabled}
                     onClick={() => { setModal(null); modal.resolve(i) }}
-                    className="px-5 py-3 rounded-xl font-semibold text-sm bg-gradient-to-br from-purple-900/60 to-purple-950/80 border border-blue-400/15 text-white/90 hover:border-blue-400/40 hover:from-blue-900/30 hover:to-purple-800/50 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-none"
+                    className="max-w-full break-words whitespace-normal px-5 py-3 rounded-lg font-semibold text-sm bg-white/5 border border-white/15 text-white/90 hover:bg-white/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     {p.name}
                   </button>
@@ -1130,16 +1153,36 @@ export default function WerewolfGame() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">Tổng số người chơi</label>
-                    <input type="number" min="2" placeholder="Ví dụ: 10" value={numPlayers} onChange={e => setNumPlayers(e.target.value)} className="w-full bg-black/40 text-white border border-white/10 rounded-xl px-3.5 py-2.5 text-sm focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/10 outline-none transition-all" />
+                    <input aria-label="Tổng số người chơi" type="number" min="2" max="60" placeholder="Ví dụ: 10" value={numPlayers} onChange={e => setNumPlayers(e.target.value)} className="w-full bg-black/40 text-white border border-white/10 rounded-xl px-3.5 py-2.5 text-sm focus:border-blue-400/50 outline-none" />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">Chuỗi vai trò (VN hoặc EN)</label>
-                    <input type="text" placeholder="Ví dụ: 1 Soi, 1 Witch, 1 Mirror" value={rolesInput} onChange={e => setRolesInput(e.target.value)} className="w-full bg-black/40 text-white border border-white/10 rounded-xl px-3.5 py-2.5 text-sm focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/10 outline-none transition-all" />
+                    <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">Vai trò đã chọn</label>
+                    <div className="py-2.5 text-white text-sm">{selectedRoleCount} / {numPlayers || 0}</div>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">Tên người chơi, mỗi dòng một tên</label>
-                  <textarea placeholder={'PLAYER 1\nPLAYER 2\nPLAYER 3'} value={namesInput} onChange={e => setNamesInput(e.target.value)} className="w-full bg-black/40 text-white border border-white/10 rounded-xl px-3.5 py-2.5 text-sm min-h-[100px] resize-y focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/10 outline-none transition-all" />
+                  <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">Tên theo chiều kim đồng hồ, mỗi dòng một tên</label>
+                  <textarea aria-label="Danh sách tên" placeholder={'PLAYER 1\nPLAYER 2\nPLAYER 3'} value={namesInput} onChange={e => setNamesInput(e.target.value)} className="w-full bg-black/40 text-white border border-white/10 rounded-xl px-3.5 py-2.5 text-sm min-h-[100px] resize-y focus:border-blue-400/50 outline-none" />
+                </div>
+                {namesInput && (
+                  <ol className="grid sm:grid-cols-2 gap-2 max-h-80 overflow-auto">
+                    {seatNames.map((name, index) => (
+                      <li key={index} className="flex items-center gap-2 min-w-0">
+                        <span className="text-amber-100 text-sm w-8 shrink-0">#{index + 1}</span>
+                        <input aria-label={`Ghế ${index + 1}`} value={name} onChange={event => updateSeat(index, event.target.value)} className="min-w-0 flex-1 bg-black/40 border border-white/10 rounded-lg p-2 text-white text-sm" />
+                        <button title="Lên một ghế" aria-label={`Ghế ${index + 1}: lên`} disabled={index === 0} onClick={() => moveSeat(index, -1)} className="p-2 text-white disabled:opacity-25"><ArrowUp size={16} /></button>
+                        <button title="Xuống một ghế" aria-label={`Ghế ${index + 1}: xuống`} disabled={index === seatNames.length - 1} onClick={() => moveSeat(index, 1)} className="p-2 text-white disabled:opacity-25"><ArrowDown size={16} /></button>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {roleOptions.map(role => (
+                    <label key={role.name} className="flex items-center justify-between gap-2 text-white/80 text-sm border-b border-white/10 py-2 min-w-0">
+                      <span className="break-words">{role.name}</span>
+                      <input aria-label={`Số lượng ${role.name}`} type="number" min="0" max={role.multiple ? Number(numPlayers) || 60 : 1} value={roleCounts[role.name] ?? 0} onChange={event => setRoleCounts(prev => ({ ...prev, [role.name]: Number(event.target.value) }))} className="w-14 shrink-0 bg-black/40 border border-white/10 rounded-lg p-2 text-white" />
+                    </label>
+                  ))}
                 </div>
                 <div className="flex flex-wrap gap-2.5">
                   <button onClick={startGame} className="px-5 py-2.5 bg-gradient-to-r from-red-800 to-red-700 text-white font-bold text-sm rounded-xl hover:from-red-700 hover:to-red-600 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-red-900/30 transition-all">
@@ -1152,9 +1195,6 @@ export default function WerewolfGame() {
                     Làm lại
                   </button>
                 </div>
-                <p className="text-xs text-white/30 leading-relaxed">
-                  Hỗ trợ tên vai trò tiếng Việt và tiếng Anh: Ma Sói / Soi / Wolf / Werewolf, Sói Con / Wolf Cub, Tiên Tri / Seer, Fox / Cao, Gau / Bear, Bảo Vệ / Bodyguard, Phù Thủy / Witch, Thợ Săn / Hunter, Già Làng / Elder, Cupid, 50/50, Dân Làng / Villager / Dan, Bitch, Gương / Mirror.
-                </p>
               </div>
             </div>
           )}
@@ -1186,7 +1226,7 @@ export default function WerewolfGame() {
           </div>
 
           {/* Log Card */}
-          <div className="glass-card rounded-2xl overflow-hidden">
+          {!publicView && <div className="glass-card rounded-2xl overflow-hidden">
             <div className="px-5 py-3 border-b border-white/5 bg-white/[0.02]">
               <h2 className="text-sm font-bold font-[family-name:var(--font-be-vietnam)] uppercase tracking-widest text-amber-100">Nhật ký</h2>
             </div>
@@ -1195,7 +1235,7 @@ export default function WerewolfGame() {
                 {gameState.gameLogs.join('\n') || 'Chưa có nhật ký...'}
               </div>
             </div>
-          </div>
+          </div>}
 
           {/* Players Card */}
           {gameState.players.length > 0 && (
@@ -1214,12 +1254,13 @@ export default function WerewolfGame() {
                     return (
                       <div key={i} className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-all ${p.isAlive ? 'bg-white/[0.03] border-white/5 hover:bg-white/[0.05]' : 'bg-red-900/5 border-red-900/10 opacity-40'}`}>
                         <div>
-                          <div className="font-semibold text-white text-sm">{p.name}</div>
-                          <div className="text-white/40 text-xs mt-0.5">Vai: {roleName} · {p.isAlive ? 'SỐNG' : 'ĐÃ CHẾT'}</div>
+                          <div className="font-semibold text-white text-sm break-words">#{i + 1} {p.name}</div>
+                          <div className="text-white/40 text-xs mt-0.5">{!publicView && `Vai: ${roleName} · `}{p.isAlive ? 'SỐNG' : 'ĐÃ CHẾT'}</div>
+                          {p.isAlive && <div className="text-white/40 text-xs mt-1 break-words">Hàng xóm: {getLivingNeighbors(gameState.players, i).map(index => gameState.players[index].name).join(' / ') || 'Không có'}</div>}
                         </div>
-                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${p.side === 'Sói' ? 'bg-red-900/20 text-red-400 border-red-500/20' : p.side === 'Gương' ? 'bg-purple-900/20 text-purple-400 border-purple-500/20' : 'bg-green-900/20 text-green-400 border-green-500/20'}`}>
+                        {!publicView && <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${p.side === 'Sói' ? 'bg-red-900/20 text-red-400 border-red-500/20' : p.side === 'Gương' ? 'bg-purple-900/20 text-purple-400 border-purple-500/20' : 'bg-green-900/20 text-green-400 border-green-500/20'}`}>
                           {p.side}
-                        </span>
+                        </span>}
                         {!p.isAlive && <span className="text-lg">💀</span>}
                       </div>
                     )
@@ -1227,6 +1268,16 @@ export default function WerewolfGame() {
                 </div>
               </div>
             </div>
+          )}
+          {!publicView && nightSummaries.length > 0 && (
+            <section className="lg:col-span-2 border-t border-white/10 pt-4">
+              <h2 className="text-sm font-semibold text-amber-100 mb-3">Tổng kết đêm · Chỉ quản trò</h2>
+              <div className="flex flex-wrap gap-2">
+                {nightSummaries.map(summary => (
+                  <button key={summary.night} disabled={gameState.running} onClick={() => setModal({ title: `Tổng kết đêm ${summary.night} · Chỉ quản trò`, mode: 'nightReview', summary, resolve: () => {} })} className="px-3 py-2 rounded-lg border border-white/10 text-white text-sm disabled:opacity-40">Đêm {summary.night}</button>
+                ))}
+              </div>
+            </section>
           )}
         </div>
       </main>
