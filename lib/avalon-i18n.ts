@@ -1,0 +1,210 @@
+import type { AvalonRole } from './avalon-rules'
+
+export type AvalonLanguage = 'en' | 'vi'
+
+const english = {
+  language: 'Game language', sideProjects: 'Side Projects', edition: 'Hidden Agenda · Commander edition',
+  tableAlt: 'The Round Table and its ten seats', ability: 'Ability', objective: 'Objective', strategy: 'How to play',
+  goodObjective: 'Complete three missions and keep the Commander from being identified by the Assassin.',
+  evilObjective: 'Fail three missions, reject five groups in a row, or identify the Commander after three successful missions.',
+  missionBoard: 'Mission board', missionTrack: 'Mission track', bestOfFive: 'Best of five', mission: 'Mission {number}',
+  succeeded: 'Succeeded', failed: 'Failed', failCount: '{count} Fail', playerCount: '{count} players', failThreshold: '{count} to fail',
+  players: 'Players', playerCountLabel: 'Player count', resistance: 'Resistance', spies: 'Spies',
+  playerName: 'Player {number} name', playerPlaceholder: 'Player {number}',
+  earlier: 'Move earlier', later: 'Move later', moveEarlier: 'Move player {number} earlier', moveLater: 'Move player {number} later',
+  firstLeader: 'First leader', sampleNames: 'Sample names', roles: 'Roles', roleSetup: 'Role setup',
+  beginner: 'Basic Resistance', classic: 'Commander', custom: 'Custom game', required: 'Required', includeRole: 'Include {role}',
+  lineup: '{count}-player lineup',
+  beginnerSetup: 'Basic Resistance: only Resistance Members and Spies. Three successful missions win immediately; no special abilities or assassination.',
+  classicSetup: 'Classic: Commander + Bodyguard, Assassin + False Commander.',
+  advancedSetup: 'Deep Cover Spy and Blind Spy are advanced variants. Roles stay fixed for all five missions.',
+  approvalRule: 'Majority approves a group. Five consecutive rejections give the Spies the win.',
+  assignRoles: 'Assign roles', newGame: 'New game', currentTurn: 'Current turn',
+  acceptedVotes: 'Group accepted · {approve} approve / {reject} reject',
+  roleProgress: 'Role {current} / {total}', voteProgress: 'Group vote {current} / {total}', cardProgress: 'Mission card {current} / {total}',
+  passDevice: 'Pass the device to', showRole: 'Show my role', openVote: 'Open my vote', openCard: 'Open my mission card',
+  knownSpies: 'Known Spies (Deep Cover Spy is hidden)', commanderCandidates: 'Commander / False Commander candidates',
+  otherSpies: 'Other known Spies (Blind Spy is hidden)', secretInfo: 'Secret information', noKnowledge: 'No other players revealed',
+  hideBegin: 'Hide role · Begin group selection', hideNext: 'Hide role · Next player',
+  proposedGroup: 'Proposed group: {names}', approve: 'Approve', reject: 'Reject',
+  goodCardRule: 'Resistance must play Pass.', evilCardRule: 'Spies may play Pass or Fail.', pass: 'Pass', fail: 'Fail',
+  passedMission: 'Mission {number} passed', failedMission: 'Mission {number} failed',
+  rejectedVotes: 'Group rejected · {approve} approve / {reject} reject · Next leader', groupLeader: 'Mission {number} · Group leader',
+  selected: '{current} / {total} selected', teamMember: 'Team member {name}',
+  rejectionTrack: 'Rejected groups: {count} / 5', missionThreshold: '{count} Fail card(s) required to fail this mission.',
+  voteGroup: 'Vote on this group', returnDevice: 'Return the device to the group', sealed: 'All mission cards are sealed.',
+  revealResult: 'Reveal mission result', cardTotals: '{pass} Pass · {fail} Fail', group: 'Group: {names}',
+  viewWinner: 'View winner', finalIdentification: 'Continue to final identification', nextLeader: 'Next group leader',
+  threePassed: 'Three missions passed. The Commander must survive.', finalAssassination: 'Final assassination',
+  assassin: 'Assassin', commanderCandidate: 'Commander candidate', confirmAssassination: 'Confirm assassination',
+  goodWins: 'Resistance wins', evilWins: 'Spies win', target: '(target)', backSetup: 'Back to setup',
+  publicRecord: 'Public record', accepted: 'Accepted', rejected: 'Rejected',
+  resetTitle: 'Start a new game?', resetBody: 'The current match and its hidden roles will be discarded.', cancel: 'Cancel',
+  footer: '5-20 players · Five missions · Three successful or failed missions decide the mission score',
+  basicEdition: 'Basic Resistance · Members and Spies only', houseBadge: 'Experimental house rules', standardBadge: 'Standard player count',
+  houseNotice: '11-20 players is not an official setup and has not been balance-tested. House rules use about 40% Spies, groups of 30% / 40% / 40% / 50% / 50% (rounded up), and two Fails on mission 4. Large groups take longer to pass the device and discuss.',
+  basicGoodObjective: 'Complete three successful missions to win for the Resistance.',
+  basicEvilObjective: 'Fail three missions or get five groups rejected in a row to win for the Spies.',
+  basicGoodDescription: 'Resistance. Has no special ability and receives no secret identities. Votes on groups and must play Pass on missions.',
+  basicEvilDescription: 'Spy. Knows the other Spies. Votes on groups and may play Pass or Fail on missions. There is no final assassination in basic mode.',
+  basicGoodStrategy: 'Track votes and mission results, explain suspicions, and propose groups you trust. Use public evidence rather than claiming special knowledge.',
+  basicEvilStrategy: 'Build trust and join mission groups. Coordinate sabotage with your teammates; playing Pass can keep your allegiance hidden.',
+  basicSpies: 'Other Spies', errorBasicRoles: 'Basic Resistance has no special roles. Choose the Commander variant to add them.',
+  errorPlayers: 'The game requires 5-20 players.', errorDuplicateRoles: 'Each optional role can appear only once.',
+  errorCapacity: 'Too many special roles for this faction. Remove a Spy role or add players.',
+  errorQuest: 'Invalid quest number.', errorNames: 'Enter a unique, non-empty name for every player.',
+  errorLeader: 'Choose a valid first leader.', errorTeam: 'Select the required number of distinct players for this quest.',
+  errorGoodCard: 'Resistance players must submit Pass.', errorTarget: 'The Assassin must choose a Resistance player.',
+  errorPhase: 'That action is not available in the current phase.', invalidRoles: 'Invalid roles.',
+  cannotStart: 'Could not start the game.', invalidAction: 'Invalid action.',
+  endingRejected: 'Five consecutive groups were rejected.', endingFailed: 'Three missions failed.',
+  endingHit: 'The Assassin identified the Commander.', endingSurvived: 'Three missions succeeded and the Commander survived.', endingBasic: 'Three missions succeeded.',
+  customEdition: 'Custom house rules', customBadge: 'Custom house rules · Not a standard setup',
+  customNotice: 'Role quantities and mission rules are house rules and may be unbalanced. Both factions must be present. Duplicated special roles use the same ability for each player.',
+  roleQuantity: '{role} quantity', roleTotal: 'Assigned roles: {total} / {count}',
+  useBasicRoles: 'Use basic roles', useCommanderRoles: 'Use Commander roles',
+  customMissions: 'Mission rules', missionPlayers: 'Players in group', missionFails: 'Fails needed',
+  missionPlayersInput: 'Mission {number} group size', missionFailsInput: 'Mission {number} required Fails',
+  resetMissions: 'Recommended missions',
+  customFinalOn: 'Final identification is enabled. All Assassins share one target; identifying any Commander wins for the Spies.',
+  customFinalOff: 'No final identification: Resistance wins directly after three successful missions. Enable it by including both Commander and Assassin roles.',
+  currentRules: 'Current mission rules',
+  errorRoleQuantity: 'Role quantities must be whole numbers from zero to the player count.',
+  errorRoleTotal: 'The total role quantity must equal the player count.',
+  errorFactions: 'Include at least one Resistance player and one Spy.',
+  errorMissionCount: 'Configure exactly five missions.',
+  errorMissionSize: 'Mission group sizes must be whole numbers from one to the player count.',
+  errorMissionFails: 'Required Fails must be whole numbers from one to the smaller of group size and Spy count.',
+  errorCustomMissing: 'Provide custom roles and mission rules.', errorCustomMode: 'Custom roles and missions require Custom mode.',
+  customAbilityFinalOff: 'Final identification is disabled in this match; any references to an Assassin guessing the Commander do not apply.',
+} as const
+
+export type AvalonMessage = keyof typeof english
+
+const vietnamese: Record<AvalonMessage, string> = {
+  language: 'Ngôn ngữ trò chơi', sideProjects: 'Dự án cá nhân', edition: 'Hidden Agenda · Bản Chỉ huy',
+  tableAlt: 'Bàn tròn với mười vị trí ngồi', ability: 'Năng lực', objective: 'Mục tiêu', strategy: 'Cách chơi',
+  goodObjective: 'Hoàn thành ba nhiệm vụ và bảo vệ danh tính Chỉ huy trước Sát thủ.',
+  evilObjective: 'Phá hỏng ba nhiệm vụ, khiến năm nhóm liên tiếp bị từ chối, hoặc tìm đúng Chỉ huy sau ba nhiệm vụ thành công.',
+  missionBoard: 'Bảng nhiệm vụ', missionTrack: 'Tiến trình nhiệm vụ', bestOfFive: 'Tối đa năm vòng', mission: 'Vòng {number}',
+  succeeded: 'Thành công', failed: 'Thất bại', failCount: '{count} phá hoại', playerCount: '{count} người', failThreshold: 'Cần {count} phá hoại',
+  players: 'Người chơi', playerCountLabel: 'Số người chơi', resistance: 'Kháng chiến', spies: 'Gián điệp',
+  playerName: 'Tên người chơi {number}', playerPlaceholder: 'Người chơi {number}',
+  earlier: 'Đưa lên trước', later: 'Đưa xuống sau', moveEarlier: 'Đưa người chơi {number} lên trước', moveLater: 'Đưa người chơi {number} xuống sau',
+  firstLeader: 'Trưởng nhóm đầu', sampleNames: 'Điền tên mẫu', roles: 'Vai trò', roleSetup: 'Thiết lập vai trò',
+  beginner: 'Kháng chiến cơ bản', classic: 'Bản Chỉ huy', custom: 'Tùy chọn', required: 'Bắt buộc', includeRole: 'Thêm {role}',
+  lineup: 'Bộ vai cho {count} người',
+  beginnerSetup: 'Kháng chiến cơ bản: chỉ có thành viên Kháng chiến và Gián điệp. Thắng ngay sau ba nhiệm vụ thành công; không có năng lực đặc biệt hoặc lượt đoán Chỉ huy.',
+  classicSetup: 'Tiêu chuẩn: Chỉ huy + Vệ sĩ, Sát thủ + Chỉ huy giả.',
+  advancedSetup: 'Gián điệp nằm vùng và Gián điệp mù là các vai nâng cao. Vai trò giữ nguyên trong cả năm nhiệm vụ.',
+  approvalRule: 'Nhóm được chấp nhận khi quá nửa số người đồng ý. Năm nhóm liên tiếp bị từ chối sẽ giúp phe Gián điệp thắng.',
+  assignRoles: 'Chia vai', newGame: 'Ván mới', currentTurn: 'Lượt hiện tại',
+  acceptedVotes: 'Nhóm được chấp nhận · {approve} đồng ý / {reject} phản đối',
+  roleProgress: 'Xem vai {current} / {total}', voteProgress: 'Bỏ phiếu {current} / {total}', cardProgress: 'Lá nhiệm vụ {current} / {total}',
+  passDevice: 'Chuyển thiết bị cho', showRole: 'Xem vai của tôi', openVote: 'Mở phiếu của tôi', openCard: 'Mở lá nhiệm vụ của tôi',
+  knownSpies: 'Gián điệp đã biết (không thấy Gián điệp nằm vùng)', commanderCandidates: 'Ứng viên Chỉ huy / Chỉ huy giả',
+  otherSpies: 'Đồng đội Gián điệp đã biết (không thấy Gián điệp mù)', secretInfo: 'Thông tin bí mật', noKnowledge: 'Không biết danh tính người khác',
+  hideBegin: 'Ẩn vai · Bắt đầu chọn nhóm', hideNext: 'Ẩn vai · Người tiếp theo',
+  proposedGroup: 'Nhóm được đề xuất: {names}', approve: 'Đồng ý', reject: 'Phản đối',
+  goodCardRule: 'Phe Kháng chiến phải chọn Thành công.', evilCardRule: 'Phe Gián điệp được chọn Thành công hoặc Phá hoại.', pass: 'Thành công', fail: 'Phá hoại',
+  passedMission: 'Nhiệm vụ {number} thành công', failedMission: 'Nhiệm vụ {number} thất bại',
+  rejectedVotes: 'Nhóm bị từ chối · {approve} đồng ý / {reject} phản đối · Đổi trưởng nhóm', groupLeader: 'Nhiệm vụ {number} · Trưởng nhóm',
+  selected: 'Đã chọn {current} / {total}', teamMember: 'Thành viên nhóm {name}',
+  rejectionTrack: 'Nhóm bị từ chối: {count} / 5', missionThreshold: 'Cần {count} lá Phá hoại để nhiệm vụ này thất bại.',
+  voteGroup: 'Bỏ phiếu cho nhóm này', returnDevice: 'Trả thiết bị về cho cả nhóm', sealed: 'Tất cả lá nhiệm vụ đã được giữ kín.',
+  revealResult: 'Công bố kết quả nhiệm vụ', cardTotals: '{pass} Thành công · {fail} Phá hoại', group: 'Nhóm: {names}',
+  viewWinner: 'Xem phe chiến thắng', finalIdentification: 'Tiếp tục đoán Chỉ huy', nextLeader: 'Trưởng nhóm tiếp theo',
+  threePassed: 'Ba nhiệm vụ đã thành công. Chỉ huy cần giữ được danh tính.', finalAssassination: 'Sát thủ đoán Chỉ huy',
+  assassin: 'Sát thủ', commanderCandidate: 'Người bị nghi là Chỉ huy', confirmAssassination: 'Xác nhận lựa chọn',
+  goodWins: 'Phe Kháng chiến thắng', evilWins: 'Phe Gián điệp thắng', target: '(bị chọn)', backSetup: 'Quay về thiết lập',
+  publicRecord: 'Nhật ký công khai', accepted: 'Chấp nhận', rejected: 'Từ chối',
+  resetTitle: 'Bắt đầu ván mới?', resetBody: 'Ván hiện tại và các vai bí mật sẽ bị xóa.', cancel: 'Hủy',
+  footer: '5–20 người · Năm nhiệm vụ · Ba nhiệm vụ thành công hoặc thất bại quyết định điểm nhiệm vụ',
+  basicEdition: 'Kháng chiến cơ bản · Chỉ có thành viên và Gián điệp', houseBadge: 'Luật nhà thử nghiệm', standardBadge: 'Số người tiêu chuẩn',
+  houseNotice: '11–20 người không phải thiết lập chính thức và chưa được kiểm chứng độ cân bằng. Luật nhà dùng khoảng 40% Gián điệp, nhóm có 30% / 40% / 40% / 50% / 50% số người (làm tròn lên), và hai lá Phá hoại ở nhiệm vụ 4. Nhóm đông cần thêm thời gian chuyền thiết bị và thảo luận.',
+  basicGoodObjective: 'Hoàn thành ba nhiệm vụ để phe Kháng chiến chiến thắng.',
+  basicEvilObjective: 'Phá hỏng ba nhiệm vụ hoặc khiến năm nhóm liên tiếp bị từ chối để phe Gián điệp chiến thắng.',
+  basicGoodDescription: 'Phe Kháng chiến. Không có năng lực đặc biệt và không biết danh tính bí mật. Tham gia bỏ phiếu chọn nhóm và phải chọn Thành công trong nhiệm vụ.',
+  basicEvilDescription: 'Phe Gián điệp. Biết các Gián điệp khác. Tham gia bỏ phiếu chọn nhóm và được chọn Thành công hoặc Phá hoại. Bản cơ bản không có lượt đoán Chỉ huy cuối ván.',
+  basicGoodStrategy: 'Theo dõi phiếu bầu và kết quả nhiệm vụ, giải thích nghi ngờ và đề xuất nhóm đáng tin. Dựa vào bằng chứng công khai thay vì nhận mình có thông tin đặc biệt.',
+  basicEvilStrategy: 'Tạo lòng tin và tham gia nhiệm vụ. Phối hợp phá hoại với đồng đội; chọn Thành công đôi khi giúp che giấu phe của bạn.',
+  basicSpies: 'Các Gián điệp khác', errorBasicRoles: 'Bản Kháng chiến cơ bản không có vai đặc biệt. Chọn bản Chỉ huy để thêm các vai này.',
+  errorPlayers: 'Trò chơi cần từ 5 đến 20 người.', errorDuplicateRoles: 'Mỗi vai đặc biệt chỉ được xuất hiện một lần.',
+  errorCapacity: 'Có quá nhiều vai đặc biệt cho phe này. Bỏ bớt vai Gián điệp hoặc thêm người chơi.',
+  errorQuest: 'Số nhiệm vụ không hợp lệ.', errorNames: 'Nhập tên cho từng người, không để trống hoặc trùng tên.',
+  errorLeader: 'Chọn trưởng nhóm đầu tiên hợp lệ.', errorTeam: 'Chọn đủ số người khác nhau theo yêu cầu của nhiệm vụ.',
+  errorGoodCard: 'Người thuộc phe Kháng chiến phải chọn Thành công.', errorTarget: 'Sát thủ phải chọn một người thuộc phe Kháng chiến.',
+  errorPhase: 'Không thể thực hiện thao tác này ở giai đoạn hiện tại.', invalidRoles: 'Vai trò không hợp lệ.',
+  cannotStart: 'Không thể bắt đầu ván chơi.', invalidAction: 'Thao tác không hợp lệ.',
+  endingRejected: 'Năm nhóm liên tiếp đã bị từ chối.', endingFailed: 'Ba nhiệm vụ đã thất bại.',
+  endingHit: 'Sát thủ đã tìm đúng Chỉ huy.', endingSurvived: 'Ba nhiệm vụ thành công và Chỉ huy không bị tìm ra.', endingBasic: 'Ba nhiệm vụ đã thành công.',
+  customEdition: 'Luật nhà tùy chọn', customBadge: 'Luật nhà tùy chọn · Không phải thiết lập tiêu chuẩn',
+  customNotice: 'Số lượng vai và luật nhiệm vụ là luật nhà, có thể không cân bằng. Phải có cả hai phe. Nếu một vai đặc biệt có nhiều người, mỗi người dùng cùng năng lực của vai đó.',
+  roleQuantity: 'Số lượng {role}', roleTotal: 'Số vai đã chọn: {total} / {count}',
+  useBasicRoles: 'Dùng bộ vai cơ bản', useCommanderRoles: 'Dùng bộ vai Chỉ huy',
+  customMissions: 'Luật nhiệm vụ', missionPlayers: 'Số người trong nhóm', missionFails: 'Số lá Phá hoại cần có',
+  missionPlayersInput: 'Số người ở nhiệm vụ {number}', missionFailsInput: 'Số lá Phá hoại ở nhiệm vụ {number}',
+  resetMissions: 'Nhiệm vụ đề xuất',
+  customFinalOn: 'Có lượt đoán cuối. Tất cả Sát thủ cùng chọn một mục tiêu; tìm đúng bất kỳ Chỉ huy nào thì phe Gián điệp thắng.',
+  customFinalOff: 'Không có lượt đoán cuối: Kháng chiến thắng ngay sau ba nhiệm vụ thành công. Muốn có lượt này, cần chọn cả vai Chỉ huy và Sát thủ.',
+  currentRules: 'Luật nhiệm vụ hiện tại',
+  errorRoleQuantity: 'Số lượng vai phải là số nguyên từ không đến tổng số người chơi.',
+  errorRoleTotal: 'Tổng số vai phải bằng tổng số người chơi.',
+  errorFactions: 'Cần có ít nhất một người Kháng chiến và một Gián điệp.',
+  errorMissionCount: 'Cần thiết lập đúng năm nhiệm vụ.',
+  errorMissionSize: 'Số người trong nhóm phải là số nguyên từ một đến tổng số người chơi.',
+  errorMissionFails: 'Số lá Phá hoại cần có phải là số nguyên từ một đến số nhỏ hơn giữa số người trong nhóm và số Gián điệp.',
+  errorCustomMissing: 'Cần thiết lập vai và luật nhiệm vụ tùy chọn.', errorCustomMode: 'Vai và nhiệm vụ tùy chỉnh cần dùng chế độ Tùy chọn.',
+  customAbilityFinalOff: 'Ván này không có lượt đoán cuối; các mô tả về Sát thủ đoán Chỉ huy không áp dụng.',
+}
+
+export const avalonMessages: Record<AvalonLanguage, Record<AvalonMessage, string>> = { en: english, vi: vietnamese }
+
+export function avalonTranslator(language: AvalonLanguage) {
+  return (key: AvalonMessage, values: Record<string, string | number> = {}) =>
+    avalonMessages[language][key].replace(/\{(\w+)\}/g, (placeholder, name: string) => values[name] === undefined ? placeholder : String(values[name]))
+}
+
+const errorKeys: AvalonMessage[] = ['errorPlayers', 'errorBasicRoles', 'errorDuplicateRoles', 'errorCapacity', 'errorQuest', 'errorNames', 'errorLeader', 'errorTeam', 'errorGoodCard', 'errorTarget', 'errorPhase', 'invalidRoles', 'cannotStart', 'invalidAction', 'errorRoleQuantity', 'errorRoleTotal', 'errorFactions', 'errorMissionCount', 'errorMissionSize', 'errorMissionFails', 'errorCustomMissing', 'errorCustomMode']
+const endingKeys: AvalonMessage[] = ['endingRejected', 'endingFailed', 'endingHit', 'endingSurvived', 'endingBasic']
+const knowledgeKeys: AvalonMessage[] = ['knownSpies', 'commanderCandidates', 'otherSpies', 'secretInfo', 'basicSpies']
+
+function localizeMessage(language: AvalonLanguage, message: string, keys: AvalonMessage[], fallback: AvalonMessage) {
+  const key = keys.find(candidate => english[candidate] === message)
+  return avalonTranslator(language)(key ?? fallback)
+}
+
+export const localizeAvalonError = (language: AvalonLanguage, message: string) => localizeMessage(language, message, errorKeys, 'invalidAction')
+export const localizeAvalonEnding = (language: AvalonLanguage, message: string) => localizeMessage(language, message, endingKeys, 'invalidAction')
+export const localizeAvalonKnowledge = (language: AvalonLanguage, message: string) => localizeMessage(language, message, knowledgeKeys, 'secretInfo')
+
+export const vietnameseRoles: {
+  names: Record<AvalonRole, string>
+  descriptions: Record<AvalonRole, string>
+  strategies: Record<AvalonRole, string>
+} = {
+  names: {
+    Merlin: 'Chỉ huy', Percival: 'Vệ sĩ', 'Loyal Servant': 'Thành viên Kháng chiến',
+    Assassin: 'Sát thủ', Morgana: 'Chỉ huy giả', Mordred: 'Gián điệp nằm vùng', Oberon: 'Gián điệp mù', Minion: 'Gián điệp',
+  },
+  descriptions: {
+    Merlin: 'Phe Kháng chiến. Biết các Gián điệp, kể cả Gián điệp mù, nhưng không thấy Gián điệp nằm vùng. Phải chọn Thành công trong nhiệm vụ. Sau ba nhiệm vụ thành công, Sát thủ có thể đoán danh tính của bạn.',
+    Percival: 'Phe Kháng chiến. Thấy tất cả người mang vai Chỉ huy hoặc Chỉ huy giả nhưng không biết vai cụ thể của từng người. Nếu không có Chỉ huy giả, chỉ thấy các Chỉ huy thật. Phải chọn Thành công; không có lá chắn hoặc khả năng hủy lựa chọn của Sát thủ.',
+    'Loyal Servant': 'Phe Kháng chiến. Không biết danh tính bí mật của người khác. Tham gia bỏ phiếu chọn nhóm và phải chọn Thành công trong nhiệm vụ.',
+    Assassin: 'Phe Gián điệp. Biết các Gián điệp khác trừ Gián điệp mù. Được chọn Thành công hoặc Phá hoại. Sau ba nhiệm vụ thành công, chọn một người thuộc phe Kháng chiến mà bạn nghĩ là Chỉ huy; đoán đúng thì phe Gián điệp thắng.',
+    Morgana: 'Phe Gián điệp. Xuất hiện như một ứng viên Chỉ huy trong mắt Vệ sĩ. Biết các Gián điệp khác trừ Gián điệp mù. Được chọn Thành công hoặc Phá hoại.',
+    Mordred: 'Phe Gián điệp. Chỉ huy không thấy bạn, nhưng các Gián điệp khác biết bạn, trừ Gián điệp mù. Được chọn Thành công hoặc Phá hoại.',
+    Oberon: 'Phe Gián điệp. Không biết các Gián điệp khác và họ cũng không biết bạn. Chỉ huy vẫn thấy bạn. Được chọn Thành công hoặc Phá hoại.',
+    Minion: 'Phe Gián điệp. Biết các Gián điệp khác trừ Gián điệp mù. Tham gia bỏ phiếu chọn nhóm và được chọn Thành công hoặc Phá hoại trong nhiệm vụ.',
+  },
+  strategies: {
+    Merlin: 'Hướng mọi người chọn nhóm đáng tin mà không để lộ mình biết danh tính Gián điệp. Lập luận từ kết quả nhiệm vụ và phiếu công khai thay vì chỉ thẳng ai là Gián điệp.',
+    Percival: 'So sánh cách bỏ phiếu và chọn nhóm của các ứng viên để tìm Chỉ huy thật. Thu hút sự chú ý về mình để bảo vệ họ, không công khai gọi tên Chỉ huy.',
+    'Loyal Servant': 'Theo dõi nhóm bị từ chối, phiếu bầu và nhiệm vụ thất bại. Giải thích nghi ngờ, chọn nhóm bạn tin tưởng và tránh làm lộ người bạn nghĩ là Chỉ huy.',
+    Assassin: 'Quan sát người thường xuyên suy đoán chính xác bất thường. Trao đổi với đồng đội Gián điệp ở lượt đoán cuối, nhưng chỉ chọn một mục tiêu.',
+    Morgana: 'Tỏ ra là người Kháng chiến có thông tin để Vệ sĩ tin bạn hơn Chỉ huy thật. Chọn Thành công đôi khi giúp giữ vỏ bọc.',
+    Mordred: 'Tận dụng việc Chỉ huy không biết bạn để tạo lòng tin và tham gia nhiệm vụ. Phối hợp phá hoại thận trọng; đôi khi chọn Thành công để giữ vỏ bọc.',
+    Oberon: 'Suy luận đồng đội từ hành vi công khai. Đừng cho rằng Gián điệp khác biết bạn là đồng đội; cân nhắc thời điểm phá hoại để tránh bị nghi ngờ.',
+    Minion: 'Tạo lòng tin, tham gia nhóm và phối hợp phá hoại. Bạn được phép chọn Thành công để che giấu phe của mình; đừng tiết lộ sớm mục tiêu của Sát thủ.',
+  },
+}

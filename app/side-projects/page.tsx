@@ -15,6 +15,12 @@ export default function SideProjects() {
       tags: ['Game', 'Interactive', 'Vietnamese'],
     },
     {
+      title: 'The Resistance',
+      description: 'Basic members-and-spies gameplay or optional Commander roles, with private handoffs, group voting, and experimental larger-group setups.',
+      href: '/side-projects/avalon',
+      tags: ['Board Game', 'Social Deduction', 'Host Tool'],
+    },
+    {
       title: '🎮 2048 — Puzzle Game',
       description: 'The classic 2048 sliding puzzle game, ported from my Android app. Swipe or use arrow keys to merge tiles and reach 2048!',
       href: '/side-projects/game2048',
