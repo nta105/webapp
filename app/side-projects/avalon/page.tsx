@@ -4,7 +4,7 @@ import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowDown, ArrowLeft, ArrowUp, Check, Crown, Eye, Flag, LockKeyhole, RotateCcw, Shield, Swords, ThumbsDown, ThumbsUp, Users, Vote, X } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, Check, Crown, Eye, Flag, LockKeyhole, RotateCcw, Shield, Swords, Users, X } from 'lucide-react'
 import { advanceAvalon, buildRolePool, createAvalon, customSetupFromPool, defaultMissions, factionOf, getSetup, knowledgeFor, recommendedRoles, roleDescriptions, roleNames, roleStrategies, validateCustomSetup } from '@/lib/avalon-rules'
 import type { AvalonAction, AvalonGame, AvalonMode, AvalonRole, CustomAvalonSetup, MissionRule } from '@/lib/avalon-rules'
 import { avalonTranslator, localizeAvalonEnding, localizeAvalonError, localizeAvalonKnowledge, vietnameseRoles } from '@/lib/avalon-i18n'
@@ -95,7 +95,6 @@ export default function AvalonPage() {
   const configuredSpies = roleTotal - configuredGood
   const identification = (roleCounts.Merlin ?? 0) > 0 && (roleCounts.Assassin ?? 0) > 0
   const actor = game?.phase === 'reveal' ? game.players[game.revealIndex]
-    : game?.phase === 'vote' ? game.players[game.votes.length]
     : game?.phase === 'quest' ? game.players[game.team[game.cards.length]] : null
   const knowledge = game && actor ? knowledgeFor(game.players, actor) : null
   const privatePhase = !!actor
@@ -308,12 +307,12 @@ export default function AvalonPage() {
             <section className="py-8 min-h-64" aria-label={translate('currentTurn')}>
               {privatePhase && actor && (
                 <div className="max-w-lg mx-auto text-center">
-                  {game.phase === 'quest' && !privateOpen && <p className="text-emerald-300 text-sm mb-5">{translate('acceptedVotes', { approve: lastProposal?.votes.filter(Boolean).length ?? 0, reject: count - (lastProposal?.votes.filter(Boolean).length ?? 0) })}</p>}
+                  {game.phase === 'quest' && !privateOpen && <p className="text-emerald-300 text-sm mb-5">{translate('groupAccepted')}</p>}
                   <LockKeyhole className="mx-auto text-white/35 mb-4" size={28} />
-                  <p className="text-xs uppercase text-white/45 mb-2">{translate(game.phase === 'reveal' ? 'roleProgress' : game.phase === 'vote' ? 'voteProgress' : 'cardProgress', { current: game.phase === 'reveal' ? game.revealIndex + 1 : game.phase === 'vote' ? game.votes.length + 1 : game.cards.length + 1, total: game.phase === 'quest' ? game.team.length : count })}</p>
+                  <p className="text-xs uppercase text-white/45 mb-2">{translate(game.phase === 'reveal' ? 'roleProgress' : 'cardProgress', { current: game.phase === 'reveal' ? game.revealIndex + 1 : game.cards.length + 1, total: game.phase === 'quest' ? game.team.length : count })}</p>
                   {!privateOpen && <p className="text-sm text-white/50 mb-2">{translate('passDevice')}</p>}
                   <h2 className="text-2xl break-words mb-4">{actor.name}</h2>
-                  {!privateOpen ? <button onClick={() => setPrivateOpen(true)} className={primary}><Eye size={16} /> {translate(game.phase === 'reveal' ? 'showRole' : game.phase === 'vote' ? 'openVote' : 'openCard')}</button> : game.phase === 'reveal' ? (
+                  {!privateOpen ? <button onClick={() => setPrivateOpen(true)} className={primary}><Eye size={16} /> {translate(game.phase === 'reveal' ? 'showRole' : 'openCard')}</button> : game.phase === 'reveal' ? (
                     <div>
                       <p className={`text-3xl mb-3 ${factionOf(actor.role) === 'Good' ? 'text-emerald-300' : 'text-rose-300'}`} style={{ fontFamily: 'Georgia, serif' }}>{roleLabels[actor.role]}</p>
                       <div className="mb-5"><RoleGuide role={actor.role} language={language} mode={game.mode} identification={game.finalIdentification} /></div>
@@ -322,14 +321,6 @@ export default function AvalonPage() {
                         <p className="text-sm break-words">{knowledge?.names.join(' / ') || translate('noKnowledge')}</p>
                       </div>
                       <button className={secondary} onClick={() => act({ type: 'reveal' })}><LockKeyhole size={16} /> {translate(game.revealIndex === count - 1 ? 'hideBegin' : 'hideNext')}</button>
-                    </div>
-                  ) : game.phase === 'vote' ? (
-                    <div>
-                      <p className="text-sm text-white/60 break-words mb-5">{translate('proposedGroup', { names: game.team.map(id => game.players[id].name).join(' / ') })}</p>
-                      <div className="flex flex-wrap justify-center gap-3">
-                        <button className={primary} onClick={() => act({ type: 'vote', approve: true })}><ThumbsUp size={16} /> {translate('approve')}</button>
-                        <button className={`${button} bg-rose-200 text-[#351b23] hover:bg-rose-100`} onClick={() => act({ type: 'vote', approve: false })}><ThumbsDown size={16} /> {translate('reject')}</button>
-                      </div>
                     </div>
                   ) : (
                     <div>
@@ -346,7 +337,7 @@ export default function AvalonPage() {
               {game.phase === 'proposal' && (
                 <div>
                   {lastQuest && <p className={`text-sm mb-3 ${lastQuest.succeeded ? 'text-emerald-300' : 'text-rose-300'}`}>{translate(lastQuest.succeeded ? 'passedMission' : 'failedMission', { number: lastQuest.number })} · {translate('failCount', { count: lastQuest.fails })}</p>}
-                  {lastProposal && !lastProposal.approved && <p className="text-sm text-rose-200 mb-3">{translate('rejectedVotes', { approve: lastProposal.votes.filter(Boolean).length, reject: count - lastProposal.votes.filter(Boolean).length })}</p>}
+                  {lastProposal && !lastProposal.approved && <p className="text-sm text-rose-200 mb-3">{translate('groupRejected')}</p>}
                   <div className="flex flex-wrap justify-between gap-3 mb-5">
                     <div className="min-w-0 max-w-full"><p className="text-xs text-white/40 mb-1">{translate('groupLeader', { number: game.quest })}</p><h2 className="text-xl flex items-center gap-2"><Crown size={20} className="text-amber-200 shrink-0" /><span className="min-w-0 break-words">{game.players[game.leader].name}</span></h2></div>
                     <div className="text-sm text-white/50">{translate('selected', { current: selectedTeam.length, total: game.missions[game.quest - 1].teamSize })}</div>
@@ -359,7 +350,20 @@ export default function AvalonPage() {
                   </div>
                   <div className="flex flex-wrap justify-between items-center gap-4">
                     <span className="text-xs text-white/50">{translate('rejectionTrack', { count: game.rejections })} · {translate('missionThreshold', { count: game.missions[game.quest - 1].failsRequired })}</span>
-                    <button className={primary} disabled={selectedTeam.length !== game.missions[game.quest - 1].teamSize} onClick={() => act({ type: 'propose', team: selectedTeam })}><Vote size={16} /> {translate('voteGroup')}</button>
+                    <button className={primary} disabled={selectedTeam.length !== game.missions[game.quest - 1].teamSize} onClick={() => act({ type: 'propose', team: selectedTeam })}><Users size={16} /> {translate('presentGroup')}</button>
+                  </div>
+                </div>
+              )}
+
+              {game.phase === 'decision' && (
+                <div className="max-w-lg mx-auto text-center">
+                  <Users size={30} className="mx-auto text-white/40 mb-4" />
+                  <p className="text-xs uppercase text-white/45 mb-2">{translate('mission', { number: game.quest })}</p>
+                  <h2 className="text-2xl mb-3">{translate('groupDecision')}</h2>
+                  <p className="text-sm text-white/60 break-words mb-6">{translate('proposedGroup', { names: game.team.map(id => game.players[id].name).join(' / ') })}</p>
+                  <div className="flex flex-wrap justify-center gap-3">
+                    <button className={primary} onClick={() => act({ type: 'decide', accepted: true })}><Check size={16} /> {translate('acceptGroup')}</button>
+                    <button className={`${button} bg-rose-200 text-[#351b23] hover:bg-rose-100`} onClick={() => act({ type: 'decide', accepted: false })}><X size={16} /> {translate('rejectGroup')}</button>
                   </div>
                 </div>
               )}
@@ -412,9 +416,8 @@ export default function AvalonPage() {
                 <h2 className="text-sm font-semibold mb-4">{translate('publicRecord')}</h2>
                 <div className="space-y-3">
                   {[...game.proposals].reverse().map((proposal, index) => <details key={game.proposals.length - index} className="border-b border-white/10 pb-3 text-sm">
-                    <summary className="cursor-pointer text-white/70 break-words">{translate('mission', { number: proposal.quest })} · {game.players[proposal.leader].name} · {translate(proposal.approved ? 'accepted' : 'rejected')} ({proposal.votes.filter(Boolean).length}/{count})</summary>
+                    <summary className="cursor-pointer text-white/70 break-words">{translate('mission', { number: proposal.quest })} · {game.players[proposal.leader].name} · {translate(proposal.approved ? 'accepted' : 'rejected')}</summary>
                     <p className="text-xs text-white/50 mt-3 break-words">{translate('group', { names: proposal.team.map(id => game.players[id].name).join(' / ') })}</p>
-                    <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">{proposal.votes.map((approved, id) => <li key={id} className="flex gap-2 text-xs text-white/60 min-w-0">{approved ? <ThumbsUp size={12} className="text-emerald-300 shrink-0" /> : <ThumbsDown size={12} className="text-rose-300 shrink-0" />}<span className="break-words">{game.players[id].name}: {translate(approved ? 'approve' : 'reject')}</span></li>)}</ul>
                   </details>)}
                 </div>
               </section>

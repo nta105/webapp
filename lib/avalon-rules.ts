@@ -2,7 +2,7 @@ export type AvalonRole = 'Merlin' | 'Percival' | 'Loyal Servant' | 'Assassin' | 
 export type OptionalRole = 'Percival' | 'Morgana' | 'Mordred' | 'Oberon'
 export type Faction = 'Good' | 'Evil'
 export type AvalonMode = 'basic' | 'commander' | 'custom'
-export type AvalonPhase = 'reveal' | 'proposal' | 'vote' | 'quest' | 'handoff' | 'result' | 'assassination' | 'ended'
+export type AvalonPhase = 'reveal' | 'proposal' | 'decision' | 'quest' | 'handoff' | 'result' | 'assassination' | 'ended'
 
 export interface MissionRule {
   teamSize: number
@@ -31,7 +31,6 @@ export interface ProposalResult {
   quest: number
   leader: number
   team: number[]
-  votes: boolean[]
   approved: boolean
 }
 
@@ -46,7 +45,6 @@ export interface AvalonGame {
   quest: number
   rejections: number
   team: number[]
-  votes: boolean[]
   cards: boolean[]
   pendingQuest: QuestResult | null
   quests: QuestResult[]
@@ -77,18 +75,18 @@ export const roleNames: Record<AvalonRole, string> = {
 export const roleDescriptions: Record<AvalonRole, string> = {
   Merlin: 'Resistance. Knows the Spies, including the Blind Spy, but not the Deep Cover Spy. Must play Pass on missions. The Assassin can identify you after three successful missions.',
   Percival: 'Resistance. Sees all Commander and False Commander players without knowing which role each has. If no False Commander is in play, sees only the Commanders. Must play Pass; has no shield or power to cancel an assassination.',
-  'Loyal Servant': 'Resistance. Receives no secret identities. Votes on proposed groups and must play Pass on missions.',
+  'Loyal Servant': 'Resistance. Receives no secret identities. Helps decide which groups to accept and must play Pass on missions.',
   Assassin: 'Spy faction. Knows the other Spies except the Blind Spy. May play Pass or Fail. After three successful missions, chooses one Resistance player as the Commander; a correct choice wins for the Spies.',
   Morgana: 'Spy faction. Appears as a Commander candidate to the Bodyguard. Knows the other Spies except the Blind Spy, and may play Pass or Fail.',
   Mordred: 'Spy faction. Hidden from the Commander, but known to the other Spies except the Blind Spy. May play Pass or Fail.',
   Oberon: 'Spy faction. Does not know the other Spies, and they do not know you. The Commander can see you. May play Pass or Fail.',
-  Minion: 'Spy faction. Knows the other Spies except the Blind Spy. Votes on groups and may play Pass or Fail on missions.',
+  Minion: 'Spy faction. Knows the other Spies except the Blind Spy. Helps decide which groups to accept and may play Pass or Fail on missions.',
 }
 
 export const roleStrategies: Record<AvalonRole, string> = {
-  Merlin: 'Guide votes toward trustworthy groups without making your knowledge obvious. Build arguments from public mission and voting records instead of announcing who the Spies are.',
-  Percival: 'Compare your candidates\' votes and group choices to identify the real Commander. Protect their identity by taking attention yourself, not by openly naming them.',
-  'Loyal Servant': 'Track rejected groups, votes, and failed missions. Explain your suspicions, choose groups you trust, and do not expose a player you suspect is the Commander.',
+  Merlin: 'Guide the group toward trustworthy teams without making your knowledge obvious. Build arguments from public mission results and group decisions instead of announcing who the Spies are.',
+  Percival: 'Compare your candidates\' group choices and mission results to identify the real Commander. Protect their identity by taking attention yourself, not by openly naming them.',
+  'Loyal Servant': 'Track rejected groups and failed missions. Explain your suspicions, choose groups you trust, and do not expose a player you suspect is the Commander.',
   Assassin: 'Watch for someone whose reads are unusually accurate. Discuss with your Spy teammates at the final identification, but choose only one target.',
   Morgana: 'Act like an informed Resistance player so the Bodyguard trusts you over the real Commander. A Pass card can help maintain your cover.',
   Mordred: 'Use the Commander\'s uncertainty to gain trust and join missions. Coordinate sabotage carefully; passing sometimes protects your cover.',
@@ -189,7 +187,7 @@ export function createAvalon(names: readonly string[], selected: readonly Option
     finalIdentification,
     players: cleanNames.map((name, id) => ({ id, name, role: pool[id] })),
     phase: 'reveal', revealIndex: 0, leader, quest: 1, rejections: 0,
-    team: [], votes: [], cards: [], pendingQuest: null, quests: [], proposals: [],
+    team: [], cards: [], pendingQuest: null, quests: [], proposals: [],
     winner: null, ending: null, assassinationTarget: null,
   }
 }
@@ -213,7 +211,7 @@ export function knowledgeFor(players: readonly AvalonPlayer[], player: AvalonPla
 export type AvalonAction =
   | { type: 'reveal' }
   | { type: 'propose'; team: number[] }
-  | { type: 'vote'; approve: boolean }
+  | { type: 'decide'; accepted: boolean }
   | { type: 'card'; fail: boolean }
   | { type: 'publish' }
   | { type: 'continue' }
@@ -229,17 +227,14 @@ export function advanceAvalon(game: AvalonGame, action: AvalonAction): AvalonGam
     if (action.team.length !== game.missions[game.quest - 1].teamSize || new Set(action.team).size !== action.team.length || action.team.some(id => !Number.isInteger(id) || !game.players[id])) {
       throw new Error('Select the required number of distinct players for this quest.')
     }
-    return { ...game, phase: 'vote', team: [...action.team].sort((left, right) => left - right), votes: [] }
+    return { ...game, phase: 'decision', team: [...action.team].sort((left, right) => left - right) }
   }
-  if (action.type === 'vote' && game.phase === 'vote') {
-    const votes = [...game.votes, action.approve]
-    if (votes.length < count) return { ...game, votes }
-    const approved = votes.filter(Boolean).length > count / 2
-    const proposals = [...game.proposals, { quest: game.quest, leader: game.leader, team: [...game.team], votes, approved }]
-    if (approved) return { ...game, phase: 'quest', votes, proposals, rejections: 0, cards: [] }
+  if (action.type === 'decide' && game.phase === 'decision') {
+    const proposals = [...game.proposals, { quest: game.quest, leader: game.leader, team: [...game.team], approved: action.accepted }]
+    if (action.accepted) return { ...game, phase: 'quest', proposals, rejections: 0, cards: [] }
     const rejections = game.rejections + 1
-    if (rejections === 5) return { ...game, phase: 'ended', votes: [], proposals, rejections, winner: 'Evil', ending: 'Five consecutive groups were rejected.' }
-    return { ...game, phase: 'proposal', leader: (game.leader + 1) % count, rejections, proposals, votes: [], team: [] }
+    if (rejections === 5) return { ...game, phase: 'ended', proposals, rejections, winner: 'Evil', ending: 'Five consecutive groups were rejected.' }
+    return { ...game, phase: 'proposal', leader: (game.leader + 1) % count, rejections, proposals, team: [] }
   }
   if (action.type === 'card' && game.phase === 'quest') {
     const player = game.players[game.team[game.cards.length]]
@@ -248,7 +243,7 @@ export function advanceAvalon(game: AvalonGame, action: AvalonAction): AvalonGam
     if (cards.length < game.team.length) return { ...game, cards }
     const fails = cards.filter(Boolean).length
     const succeeded = fails < game.missions[game.quest - 1].failsRequired
-    return { ...game, phase: 'handoff', cards: [], votes: [], team: [], pendingQuest: { number: game.quest, team: [...game.team], fails, succeeded } }
+    return { ...game, phase: 'handoff', cards: [], team: [], pendingQuest: { number: game.quest, team: [...game.team], fails, succeeded } }
   }
   if (action.type === 'publish' && game.phase === 'handoff' && game.pendingQuest) {
     return { ...game, phase: 'result', quests: [...game.quests, game.pendingQuest], pendingQuest: null }

@@ -38,7 +38,7 @@ integration checks. Use `npm run dev -- --port 3001` to run locally.
 ## The Resistance
 
 Use the English / Tiếng Việt switch in the page header to translate setup,
-role guides, private handoffs, votes, mission results, history, and errors.
+role guides, private handoffs, group decisions, mission results, history, and errors.
 Switching language keeps the active match, selections and player names intact.
 The selection applies to this page session; reloading starts in English.
 
@@ -95,9 +95,11 @@ No other expansion modules are implemented.
 
 Names define clockwise leader order. The first leader is selectable. Pass the
 device down the player list for private roles, then let the leader select a
-group. Every player privately enters Approve or Reject on the device. A tie
-rejects the group; rejection moves leadership to the next player, wrapping
-around the list. Five consecutive rejected groups give the Spies the win.
+group. Discuss the proposed group together in person, then record one shared
+Accept or Reject decision on the device. The app does not collect individual
+approvals or vote counts. Rejection moves leadership to the next player,
+wrapping around the list. Five consecutive rejected groups give the Spies the
+win.
 
 After approval, group members submit cards in player-list order, regardless
 of selection order. Resistance must play Pass; Spies may play Pass or Fail.
@@ -110,9 +112,9 @@ In Commander and applicable Custom setups, the Assassin can still win for
 Spies by identifying a Commander; otherwise the Resistance wins.
 
 This is a single-device pass-and-play tool, not a networked game. Keep the
-device private during reveals and ballots. Votes become public after everyone
-votes; mission history never attributes cards to individuals. Hidden roles
-and sealed aggregate outcomes exist in client memory, so privacy depends on
+device private during role reveals and mission cards. The group's decision is
+recorded without individual responses; mission history never attributes cards
+to individuals. Hidden roles and sealed aggregate outcomes exist in client memory, so privacy depends on
 trusted players, not authentication or tamper resistance. Reloading discards
 the match; no secret state is saved to local storage.
 

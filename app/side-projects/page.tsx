@@ -16,7 +16,7 @@ export default function SideProjects() {
     },
     {
       title: 'The Resistance',
-      description: 'Basic members-and-spies gameplay or optional Commander roles, with private handoffs, group voting, and experimental larger-group setups.',
+      description: 'Basic members-and-spies gameplay or optional Commander roles, with private handoffs, in-person group decisions, and experimental larger-group setups.',
       href: '/side-projects/avalon',
       tags: ['Board Game', 'Social Deduction', 'Host Tool'],
     },
