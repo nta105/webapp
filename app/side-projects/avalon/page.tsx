@@ -317,8 +317,15 @@ export default function AvalonPage() {
                       <p className={`text-3xl mb-3 ${factionOf(actor.role) === 'Good' ? 'text-emerald-300' : 'text-rose-300'}`} style={{ fontFamily: 'Georgia, serif' }}>{roleLabels[actor.role]}</p>
                       <div className="mb-5"><RoleGuide role={actor.role} language={language} mode={game.mode} identification={game.finalIdentification} /></div>
                       <div className="border-y border-white/15 py-4 mb-5">
-                        <h3 className="text-xs text-white/40 mb-2">{knowledge ? localizeAvalonKnowledge(language, knowledge.label) : ''}</h3>
-                        <p className="text-sm break-words">{knowledge?.names.join(' / ') || translate('noKnowledge')}</p>
+                        <h3 className="text-sm uppercase tracking-wide text-white/60 mb-3">{knowledge ? localizeAvalonKnowledge(language, knowledge.label) : ''}</h3>
+                        {knowledge?.names.length ? (
+                          <ul className="flex flex-wrap justify-center gap-2">
+                            {knowledge.names.map((name, index) => (
+                              // Bodyguard sees ambiguous candidates, so no faction color is implied.
+                              <li key={`${name}-${index}`} className={`min-w-0 max-w-full break-words rounded-md border px-4 py-2 text-2xl font-semibold ${actor.role === 'Percival' ? 'border-white/40 bg-white/10 text-white' : 'border-rose-400/60 bg-rose-500/15 text-rose-300'}`}>{name}</li>
+                            ))}
+                          </ul>
+                        ) : <p className="text-base text-white/60">{translate('noKnowledge')}</p>}
                       </div>
                       <button className={secondary} onClick={() => act({ type: 'reveal' })}><LockKeyhole size={16} /> {translate(game.revealIndex === count - 1 ? 'hideBegin' : 'hideNext')}</button>
                     </div>
