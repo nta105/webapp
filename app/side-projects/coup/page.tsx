@@ -13,6 +13,37 @@ const primary = `${button} bg-amber-300 text-[#241b0b] hover:bg-amber-200`
 const secondary = `${button} border border-white/20 text-white/80 hover:bg-white/10`
 const input = 'w-full min-w-0 rounded-lg border border-white/20 bg-black/20 px-3 py-2.5 text-sm text-white outline-none focus:border-amber-300'
 
+function RoleCards({ language }: { language: CoupLanguage }) {
+  const t = coupTranslator(language)
+
+  return (
+    <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {coupRoles.map(role => {
+        const details = localizeCoupRoleDetails(language, role)
+        return (
+          <li key={role} className="rounded-lg border border-white/10 bg-black/15 p-3">
+            <h3 className="mb-2 font-semibold text-amber-200">{localizeCoupRole(language, role)}</h3>
+            <dl className="space-y-2 text-xs leading-relaxed">
+              <div><dt className="font-semibold text-white/50">{t('roleAction')}</dt><dd className="text-white/75">{details.action}</dd></div>
+              <div><dt className="font-semibold text-white/50">{t('roleBlock')}</dt><dd className="text-white/75">{details.block}</dd></div>
+            </dl>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+function RoleReference({ language }: { language: CoupLanguage }) {
+  const t = coupTranslator(language)
+  return (
+    <section aria-labelledby="coup-role-reference" className="mb-5 rounded-2xl border border-amber-200/20 bg-amber-200/[0.025] p-4 sm:p-5">
+      <h2 id="coup-role-reference" className="mb-3 text-sm font-semibold text-amber-100">{t('roleReference')}</h2>
+      <RoleCards language={language} />
+    </section>
+  )
+}
+
 export default function CoupPage() {
   const [language, setLanguage] = useState<CoupLanguage>('en')
   const t = coupTranslator(language)
@@ -138,10 +169,7 @@ export default function CoupPage() {
             <details className="mt-6 border-t border-white/10 pt-4 text-sm">
               <summary className="cursor-pointer text-white/70">{t('rules')}</summary>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {coupRoles.map(role => {
-                  const details = localizeCoupRoleDetails(language, role)
-                  return <div key={role} className="rounded-lg border border-white/10 p-3"><h3 className="mb-1 font-semibold text-amber-200">{localizeCoupRole(language, role)}</h3><p className="text-xs leading-relaxed text-white/70">{details.claim}</p><p className="mt-1 text-xs leading-relaxed text-white/50">{details.power}</p></div>
-                })}
+                <div className="sm:col-span-2"><RoleCards language={language} /></div>
                 <div className="rounded-lg border border-white/10 p-3"><h3 className="mb-1 font-semibold">{t('otherActions')}</h3><p className="text-xs leading-relaxed text-white/60">{t('otherActionsDetails')}</p></div>
                 <div className="rounded-lg border border-white/10 p-3"><h3 className="mb-1 font-semibold">{t('challenges')}</h3><p className="text-xs leading-relaxed text-white/60">{t('challengeRules')}</p></div>
               </div>
@@ -167,6 +195,8 @@ export default function CoupPage() {
                 </article>
               ))}
             </section>
+
+            <RoleReference language={language} />
 
             {game.message && <p role="status" aria-live="polite" className="mb-4 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/70">{localizeCoupMessage(language, game.message)}</p>}
 

@@ -133,7 +133,8 @@ starts with two influence cards and two coins. The game supports the five
 original roles, income, Foreign Aid, Tax, Assassination, Stealing, Exchange,
 Coup, role challenges, and role-based blocks. English and Vietnamese are
 available from the in-game language switch; changing language keeps the
-current game and setup intact. A player with 10 or more coins at
+current game and setup intact. A visible in-game reference lists every role's
+action claim and block ability for all players to consult. A player with 10 or more coins at
 the start of their turn must Coup. No expansions or custom rule variants are
 included.
 
