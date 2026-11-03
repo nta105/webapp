@@ -131,7 +131,9 @@ app/side-projects/avalon/page.tsx lib/avalon-rules.ts lib/avalon-rules.test.mjs`
 Open `/side-projects/coup` for the standard 3-6 player base game. Each player
 starts with two influence cards and two coins. The game supports the five
 original roles, income, Foreign Aid, Tax, Assassination, Stealing, Exchange,
-Coup, role challenges, and role-based blocks. A player with 10 or more coins at
+Coup, role challenges, and role-based blocks. English and Vietnamese are
+available from the in-game language switch; changing language keeps the
+current game and setup intact. A player with 10 or more coins at
 the start of their turn must Coup. No expansions or custom rule variants are
 included.
 
