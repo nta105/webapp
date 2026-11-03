@@ -6,6 +6,10 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
+section[id] {
+  scroll-margin-top: 6rem;
+}
+
 code, pre {
   font-family: var(--font-geist-mono), monospace;
 }
@@ -154,6 +158,17 @@ code, pre {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

@@ -15,8 +15,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Thien An Nguyen | Guitarist & Music Instructor",
-  description: "Professional guitarist and music instructor based in the Bay Area, offering live performances and music instruction.",
+  title: {
+    default: "Thien An Nguyen | Guitarist & Music Instructor",
+    template: "%s | Thien An Nguyen",
+  },
+  description: "Guitar performances, music instruction, engineering resume, and personal projects by Thien An Nguyen in the Bay Area.",
 };
 
 export default function RootLayout({
@@ -26,13 +29,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth dark">
-      <body 
+      <body
         suppressHydrationWarning
-        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased text-gray-900 dark:text-gray-100 relative bg-[#0a0a0a]`}
+        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased text-foreground relative bg-background`}
       >
         <ThemeProvider>
           <Navbar />
-          <main className="pt-20 relative z-10">
+          <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-20 focus:left-4 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-black">
+            Skip to content
+          </a>
+          <main id="main-content" className="pt-20 relative z-10">
             {children}
           </main>
         </ThemeProvider>

@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
+import PhotoLightbox from '../components/PhotoLightbox'
 
 const allGalleryImages = [
   'Hinh-Thien-An-1.jpg',
@@ -25,31 +27,24 @@ const allGalleryImages = [
 ]
 
 export default function GalleryPage() {
-  const [lightbox, setLightbox] = useState<string | null>(null)
-  const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
-  const openLightbox = (index: number) => {
-    setLightboxIndex(index)
-    setLightbox(`/guitar/gallery/${allGalleryImages[index]}`)
-  }
+  const openLightbox = useCallback((index: number) => setLightboxIndex(index), [])
+  const closeLightbox = useCallback(() => setLightboxIndex(null), [])
 
-  const prevImage = () => {
-    const newIndex = (lightboxIndex - 1 + allGalleryImages.length) % allGalleryImages.length
-    setLightboxIndex(newIndex)
-    setLightbox(`/guitar/gallery/${allGalleryImages[newIndex]}`)
-  }
+  const prevImage = useCallback(() => {
+    setLightboxIndex((index) => index === null ? null : (index - 1 + allGalleryImages.length) % allGalleryImages.length)
+  }, [])
 
-  const nextImage = () => {
-    const newIndex = (lightboxIndex + 1) % allGalleryImages.length
-    setLightboxIndex(newIndex)
-    setLightbox(`/guitar/gallery/${allGalleryImages[newIndex]}`)
-  }
+  const nextImage = useCallback(() => {
+    setLightboxIndex((index) => index === null ? null : (index + 1) % allGalleryImages.length)
+  }, [])
 
   return (
     <div className="min-h-screen relative">
       {/* Background */}
       <div className="fixed inset-0 z-[-1]">
-        <img src="/guitar/background.avif" alt="" className="w-full h-full object-cover" />
+        <Image src="/guitar/background.avif" alt="" fill sizes="100vw" className="object-cover" />
         <div className="absolute inset-0 bg-black/50 dark:bg-black/75 transition-colors duration-500"></div>
       </div>
 
@@ -77,42 +72,41 @@ export default function GalleryPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
         <div className="columns-2 md:columns-3 gap-4">
           {allGalleryImages.map((img, i) => (
-            <div
-              key={i}
-              className="break-inside-avoid mb-4 relative rounded-xl overflow-hidden group cursor-pointer"
+            <button
+              type="button"
+              key={img}
+              aria-label={`Open performance photo ${i + 1}`}
+              className="break-inside-avoid mb-4 relative rounded-xl overflow-hidden group cursor-zoom-in block w-full"
               onClick={() => openLightbox(i)}
             >
-              <img
+              <Image
                 src={`/guitar/gallery/${img}`}
-                alt="Gallery photo"
+                alt={`Performance photo ${i + 1}`}
+                width={1200}
+                height={900}
+                sizes="(max-width: 768px) 50vw, 33vw"
                 className="w-full h-auto block group-hover:scale-105 transition-transform duration-500"
-                loading="lazy"
               />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                 </svg>
-              </div>
-            </div>
+              </span>
+            </button>
           ))}
         </div>
       </div>
 
       {/* Lightbox */}
-      {lightbox && (
-        <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4" onClick={() => setLightbox(null)}>
-          <button onClick={() => setLightbox(null)} className="absolute top-4 right-4 text-white/70 hover:text-white text-4xl font-light z-10 w-10 h-10 flex items-center justify-center">&times;</button>
-          <button onClick={(e) => { e.stopPropagation(); prevImage() }} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-3xl z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-all">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-          </button>
-          <img src={lightbox} alt="Gallery photo" className="max-w-full max-h-[90vh] object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
-          <button onClick={(e) => { e.stopPropagation(); nextImage() }} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-3xl z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-all">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-          </button>
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/50 text-sm tracking-widest">
-            {lightboxIndex + 1} / {allGalleryImages.length}
-          </div>
-        </div>
+      {lightboxIndex !== null && (
+        <PhotoLightbox
+          src={`/guitar/gallery/${allGalleryImages[lightboxIndex]}`}
+          alt={`Performance photo ${lightboxIndex + 1}`}
+          onClose={closeLightbox}
+          onPrevious={prevImage}
+          onNext={nextImage}
+          counter={`${lightboxIndex + 1} / ${allGalleryImages.length}`}
+        />
       )}
     </div>
   )

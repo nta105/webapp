@@ -1,4 +1,5 @@
 import Header from '@/app/components/Header'
+import Image from 'next/image'
 import Objective from '@/app/components/Objective'
 import Education from '@/app/components/Education'
 import Experience from '@/app/components/Experience'
@@ -13,11 +14,11 @@ export default function ResumePage() {
     <div className="min-h-screen py-8 px-4 sm:px-6 relative">
       {/* Resume background */}
       <div className="fixed inset-0 z-[-1]">
-        <img src="/background.avif" alt="" className="w-full h-full object-cover" />
+        <Image src="/background.avif" alt="" fill sizes="100vw" className="object-cover" />
         <div className="absolute inset-0 bg-gray-950/65 dark:bg-gray-950/88 transition-colors duration-500"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-blue-950/20 via-transparent to-indigo-950/30 dark:from-blue-950/40 dark:via-transparent dark:to-indigo-950/50 transition-colors duration-500"></div>
       </div>
-      <main className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <Header />
         <div className="mt-10 space-y-6">
           <Objective />
@@ -32,7 +33,7 @@ export default function ResumePage() {
           <div className="section-line mb-6"></div>
           <p>© {new Date().getFullYear()} Thien An Nguyen. Built with Next.js & Tailwind CSS.</p>
         </footer>
-      </main>
+      </div>
     </div>
   )
 }

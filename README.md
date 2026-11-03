@@ -6,7 +6,11 @@ A modern, responsive resume built with Next.js, TypeScript, and Tailwind CSS.
 - Responsive design
 - Dark/Light mode
 - Modern UI
-- Built with Next.js 15.1
+- Accessible keyboard-operable navigation and photo viewers
+- Optimized local and YouTube preview images
+- Page-specific metadata for portfolio routes
+- Contact form honeypot and FormSubmit spam verification
+- Built with Next.js 16
 
 ## Werewolf host tool
 

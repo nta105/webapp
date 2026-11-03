@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Be_Vietnam_Pro } from 'next/font/google'
 import { ArrowUp, ArrowDown } from 'lucide-react'
 import { createRolePool, getBearAnnouncement, getLivingNeighbors, getLivingSeatGroup, isWolfSide, roleOptions } from '@/lib/werewolf-rules'
@@ -1123,11 +1124,11 @@ export default function WerewolfGame() {
     <div className={`min-h-screen py-8 px-4 sm:px-6 relative ${beVietnam.variable}`}>
       {/* Werewolf-specific background */}
       <div className="fixed inset-0 z-[-1]">
-        <img src="/werewolf-background.jpg" alt="" className="w-full h-full object-cover blur-sm" />
+        <Image src="/werewolf-background.jpg" alt="" fill sizes="100vw" className="object-cover blur-sm" />
         <div className="absolute inset-0 bg-black/80 dark:bg-black/90 transition-colors duration-500"></div>
       </div>
 
-      <main className="max-w-[1360px] mx-auto">
+      <div className="max-w-[1360px] mx-auto">
         {/* Back link */}
         <Link href="/side-projects" className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white/80 transition-colors mb-6">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -1280,7 +1281,7 @@ export default function WerewolfGame() {
             </section>
           )}
         </div>
-      </main>
+      </div>
 
       {/* Modal */}
       {renderModal()}

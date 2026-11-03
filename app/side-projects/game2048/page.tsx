@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 // ─── Types ───
 interface Tile {
@@ -388,11 +389,11 @@ export default function Game2048Page() {
     <div className="min-h-screen py-8 px-4 sm:px-6 relative select-none">
       {/* Background */}
       <div className="fixed inset-0 z-[-1]">
-        <img src="/guitar/background.avif" alt="" className="w-full h-full object-cover" />
+        <Image src="/guitar/background.avif" alt="" fill sizes="100vw" className="object-cover" />
         <div className="absolute inset-0 bg-black/50 dark:bg-black/80 transition-colors duration-500" />
       </div>
 
-      <main className="max-w-lg mx-auto">
+      <div className="max-w-lg mx-auto">
         {/* Back link */}
         <Link
           href="/side-projects"
@@ -525,7 +526,7 @@ export default function Game2048Page() {
             </a>
           </p>
         </div>
-      </main>
+      </div>
     </div>
   )
 }
