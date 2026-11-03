@@ -125,3 +125,21 @@ the match; no secret state is saved to local storage.
 Run `npm run test:avalon` with Node.js 22.14 or newer. Use `npx eslint
 app/side-projects/avalon/page.tsx lib/avalon-rules.ts lib/avalon-rules.test.mjs`,
 `npx tsc --noEmit`, and `npm run build` for integration checks.
+
+## Coup
+
+Open `/side-projects/coup` for the standard 3-6 player base game. Each player
+starts with two influence cards and two coins. The game supports the five
+original roles, income, Foreign Aid, Tax, Assassination, Stealing, Exchange,
+Coup, role challenges, and role-based blocks. A player with 10 or more coins at
+the start of their turn must Coup. No expansions or custom rule variants are
+included.
+
+Pass the device for private card reveals, influence losses, and exchanges.
+Challenges, blocks, and group decisions are made openly in person. Hidden cards
+and game state exist in browser memory, not a protected server; keep the device
+private and note that reloading ends the match without saving it.
+
+Run `npm run test:coup` with Node.js 22.14 or newer. Use `npx eslint
+app/side-projects/coup/page.tsx lib/coup-rules.ts lib/coup-rules.test.mjs`,
+`npx tsc --noEmit`, and `npm run build` for integration checks.
