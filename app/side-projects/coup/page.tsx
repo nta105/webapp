@@ -2,11 +2,17 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { Be_Vietnam_Pro } from 'next/font/google'
 import { ArrowLeft, Coins, Eye, EyeOff, Flag, LockKeyhole, RotateCcw, Swords, Users } from 'lucide-react'
 import { advanceCoup, createCoup, coupRoles } from '@/lib/coup-rules'
 import type { CoupAction, CoupActionName, CoupGame, CoupRole } from '@/lib/coup-rules'
 import { coupTranslator, localizeCoupError, localizeCoupMessage, localizeCoupRole, localizeCoupRoleDetails } from '@/lib/coup-i18n'
 import type { CoupLanguage } from '@/lib/coup-i18n'
+
+const vietnameseFont = Be_Vietnam_Pro({
+  subsets: ['latin', 'vietnamese'],
+  weight: ['400', '500', '600', '700'],
+})
 
 const button = 'inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40'
 const primary = `${button} bg-amber-300 text-[#241b0b] hover:bg-amber-200`
@@ -111,7 +117,7 @@ export default function CoupPage() {
   }
 
   return (
-    <div lang={language} className="min-h-screen bg-[#171713] text-white px-4 py-6 sm:px-8 sm:py-8">
+    <div lang={language} className={`${language === 'vi' ? vietnameseFont.className : ''} min-h-screen bg-[#171713] text-white px-4 py-6 sm:px-8 sm:py-8`}>
       <div className="mx-auto max-w-5xl">
         <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -179,21 +185,25 @@ export default function CoupPage() {
         ) : (
           <>
             <section aria-label={t('standings')} className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {game.players.map(player => (
-                <article key={player.id} className={`rounded-xl border p-4 ${player.id === game.currentPlayer && game.phase === 'turn' ? 'border-amber-200/50 bg-amber-200/[0.06]' : 'border-white/10 bg-white/[0.025]'} ${!player.alive ? 'opacity-50' : ''}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h2 className="break-words font-semibold">{player.name}{player.id === game.currentPlayer && game.phase === 'turn' ? ` · ${t('turn')}` : ''}</h2>
-                      <p className="mt-1 text-xs text-white/55">{player.alive ? `${player.cards.length} ${player.cards.length === 1 ? t('influence') : t('influences')}` : t('eliminated')}</p>
+              {game.players.map(player => {
+                const isTurnPlayer = player.id === game.currentPlayer && game.phase === 'turn'
+                return (
+                  <article key={player.id} aria-current={isTurnPlayer ? 'true' : undefined} className={`rounded-xl border p-4 transition-all duration-200 ${isTurnPlayer ? 'z-10 scale-[1.02] border-2 border-amber-300 bg-amber-200/15 p-5 shadow-lg shadow-amber-300/10 ring-2 ring-amber-300/40' : 'border-white/10 bg-white/[0.025]'} ${!player.alive ? 'opacity-50' : ''}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h2 className={`break-words ${isTurnPlayer ? 'text-xl font-bold text-amber-100' : 'font-semibold'}`}>{player.name}{isTurnPlayer ? ` · ${t('turn')}` : ''}</h2>
+                        <p className="mt-1 text-xs text-white/55">{player.alive ? `${player.cards.length} ${player.cards.length === 1 ? t('influence') : t('influences')}` : t('eliminated')}</p>
+                      </div>
+                      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm"><Coins size={15} className="text-amber-200" />{player.coins}</span>
                     </div>
-                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm"><Coins size={15} className="text-amber-200" />{player.coins}</span>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2" aria-label={`${player.name} · ${t('standings')}`}>
-                    {player.revealed.map((role, index) => <span key={`${role}-${index}`} className="rounded-md border border-rose-200/25 bg-rose-200/10 px-2 py-1 text-xs text-rose-100/80">{localizeCoupRole(language, role)} · {t('revealed')}</span>)}
-                    {player.cards.map((_, index) => <span key={`hidden-${index}`} className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-xs text-white/45">{t('hiddenInfluence')}</span>)}
-                  </div>
-                </article>
-              ))}
+                    {isTurnPlayer && <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-amber-300 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-[#241b0b]"><Swords size={14} />{t('activeTurnBadge')}</p>}
+                    <div className="mt-3 flex flex-wrap gap-2" aria-label={`${player.name} · ${t('standings')}`}>
+                      {player.revealed.map((role, index) => <span key={`${role}-${index}`} className="rounded-md border border-rose-200/25 bg-rose-200/10 px-2 py-1 text-xs text-rose-100/80">{localizeCoupRole(language, role)} · {t('revealed')}</span>)}
+                      {player.cards.map((_, index) => <span key={`hidden-${index}`} className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-xs text-white/45">{t('hiddenInfluence')}</span>)}
+                    </div>
+                  </article>
+                )
+              })}
             </section>
 
             <RoleReference language={language} />
@@ -339,7 +349,7 @@ export default function CoupPage() {
 
             {game.phase === 'ended' && (
               <section className="rounded-2xl border border-amber-200/20 bg-amber-200/[0.04] p-6 sm:p-8">
-                <h2 className="mb-2 font-serif text-3xl text-amber-100">{game.winner === null ? t('gameEnded') : t('winsCoup', { name: game.players[game.winner].name })}</h2>
+                <h2 className={`mb-2 text-3xl text-amber-100 ${language === 'vi' ? vietnameseFont.className : 'font-serif'}`}>{game.winner === null ? t('gameEnded') : t('winsCoup', { name: game.players[game.winner].name })}</h2>
                 <p className="mb-5 text-sm text-white/60">{localizeCoupMessage(language, game.message)}</p>
                 <h3 className="mb-3 text-sm font-semibold text-white/70">{t('finalRoles')}</h3>
                 <ul className="mb-6 grid gap-2 sm:grid-cols-2">{game.players.map(player => <li key={player.id} className="flex justify-between gap-3 rounded-lg border border-white/10 p-3 text-sm"><span>{player.name}</span><span className="text-right text-white/55">{[...player.revealed, ...player.cards].map(role => localizeCoupRole(language, role)).join(', ') || t('eliminated')}</span></li>)}</ul>
