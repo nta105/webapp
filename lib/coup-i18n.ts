@@ -360,7 +360,9 @@ export function localizeCoupError(language: CoupLanguage, error: string): string
 
 function localizeMessageContent(language: CoupLanguage, message: string): string {
   const t = coupTranslator(language)
-  let match = message.match(/^(.+) is the last player standing\.$/)
+  let match = message.match(/^(.+ lost (?:Duke|Assassin|Captain|Ambassador|Contessa)\.) (.+)$/)
+  if (match) return `${localizeMessageContent(language, match[1])} ${localizeMessageContent(language, match[2])}`
+  match = message.match(/^(.+) is the last player standing\.$/)
   if (match) return t('messageLastStanding', { name: match[1] })
   if (message === 'No players remain.') return t('messageNoPlayers')
   match = message.match(/^(.+) took (\d+) coins? from the Court\.$/)

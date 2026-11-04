@@ -221,6 +221,7 @@ function afterChallenge(game: CoupGame, stage: 'action' | 'block', proved: boole
   if (!pending) throw new Error('There is no challenged claim.')
   if (stage === 'action') {
     if (!proved) return endOrContinue({ ...game, pending: null }, pending.actorId, `${game.players[pending.actorId].name}'s action failed.`)
+    if (game.players.filter(player => player.alive).length <= 1) return endOrContinue(game, pending.actorId, '')
     return proceedAfterActionClaim(game, pending)
   }
   if (proved) return endOrContinue({ ...game, pending: null }, pending.actorId, `${game.players[pending.blockerId!].name}'s block succeeded.`)
@@ -272,7 +273,7 @@ function beginAction(game: CoupGame, action: CoupActionName, targetId?: number):
 export function advanceCoup(game: CoupGame, action: CoupAction, random = Math.random): CoupGame {
   if (action.type === 'reveal' && game.phase === 'reveal') {
     const revealIndex = game.revealIndex + 1
-    return { ...game, revealIndex, phase: revealIndex === game.players.length ? 'turn' : 'reveal', currentPlayer: game.players[revealIndex]?.id ?? game.currentPlayer }
+    return { ...game, revealIndex, phase: revealIndex === game.players.length ? 'turn' : 'reveal' }
   }
 
   if (action.type === 'takeAction' && game.phase === 'turn') return beginAction(game, action.action, action.targetId)
@@ -308,7 +309,7 @@ export function advanceCoup(game: CoupGame, action: CoupAction, random = Math.ra
     if (pending.stage === 'blockChoice') throw new Error('There is no role claim to challenge yet.')
     const challengedPlayerId = pending.stage === 'blockChallenge' ? pending.blockerId : pending.actorId
     const challenger = game.players[action.playerId]
-    if (!challengedPlayerId || !challenger?.alive || challenger.id === challengedPlayerId) {
+    if (challengedPlayerId === undefined || !challenger?.alive || challenger.id === challengedPlayerId) {
       throw new Error('Choose a living player other than the person making the claim.')
     }
     const stage = pending.stage === 'blockChallenge' ? 'block' : 'action'
