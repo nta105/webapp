@@ -266,7 +266,7 @@ function beginAction(game: CoupGame, action: CoupActionName, targetId?: number):
   if (action === 'convert') {
     if (game.convertedThisTurn) throw new Error('You can only change allegiance once per turn.')
     if (actor.coins < 1) throw new Error('Changing allegiance costs 1 coin.')
-    const players = game.players.map(player => player.id === actor.id
+    const players = game.players.map<CoupPlayer>(player => player.id === actor.id
       ? { ...player, coins: player.coins - 1, faction: player.faction === 'Catholic' ? 'Protestant' : 'Catholic' }
       : player)
     const converted = players[actor.id]
