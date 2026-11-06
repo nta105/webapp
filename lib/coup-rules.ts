@@ -241,6 +241,7 @@ function proceedAfterActionClaim(game: CoupGame, pending: PendingTurn): CoupGame
     }
   }
   if (pending.action === 'investigate') {
+    const actor = game.players[pending.actorId]
     return { ...game, phase: 'investigate', pending, message: `${actor.name} is investigating ${game.players[pending.targetId!].name}.` }
   }
   return resolveAction(game, pending)
