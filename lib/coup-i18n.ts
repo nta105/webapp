@@ -5,25 +5,28 @@ export type CoupLanguage = 'en' | 'vi'
 const english = {
   language: 'Game language',
   sideProjects: 'Side Projects',
-  edition: 'Base game · Standard rules',
+  edition: 'Reformation · Faction play',
   playerCount: '3–6 players',
   players: 'Players',
   setupPlayers: 'Set up players',
   playerNumber: 'Player {number}',
   playerName: 'Player {number}',
-  enterNames: 'Enter 3–6 names in clockwise order. Each player starts with 2 coins and 2 hidden influence cards. The first player is randomly dealt cards too; turn order is the order shown here.',
+  enterNames: 'Enter 3–6 names in clockwise order and assign each player to a faction. Both factions must be represented. Players start with 2 coins and 2 hidden influence cards.',
   firstPlayer: 'First player',
-  baseOnly: 'Base Coup only. No expansion roles or house rules.',
+  reformationEdition: 'Reformation rules: choose a faction, switch allegiance for 1 coin, and eliminate the opposing faction.',
+  chooseFaction: 'Choose faction for {name}',
+  catholic: 'Catholic',
+  protestant: 'Protestant',
   dealCards: 'Deal the cards',
   rules: 'Actions and rules',
   roleReference: 'Role reference · visible to everyone',
   roleAction: 'Action claim',
   roleBlock: 'Block',
   otherActions: 'Other actions',
-  otherActionsDetails: 'Income: +1 coin. Foreign Aid: +2 coins, blockable by Duke. Coup: pay 7 coins and the target loses influence. At 10 or more coins at the start of your turn, you must Coup.',
+  otherActionsDetails: 'Income: +1 coin. Foreign Aid: +2 coins, blockable by Duke. Coup: pay 7 coins and an opponent loses influence. You cannot Coup or assassinate a member of your faction. At 10 or more coins at the start of your turn, you must Coup.',
   challenges: 'Challenges',
   challengeRules: 'Any other living player may challenge a role claim. A truthful claimant returns the shown card to the Court, shuffles, and draws a replacement; the challenger loses influence. A false claimant loses influence and the claimed action or block fails.',
-  influenceRules: 'Players lose one influence when challenged unsuccessfully, assassinated, or Couped. They choose which card to reveal. Losing both cards eliminates them. The last player with influence wins.',
+  influenceRules: 'Players lose one influence when challenged unsuccessfully, assassinated, or Couped. They choose which card to reveal. Losing both cards eliminates them. The last surviving faction wins.',
   standings: 'Player standings',
   turn: 'Turn',
   activeTurnBadge: 'Playing now',
@@ -49,7 +52,11 @@ const english = {
   tax: 'Tax',
   taxDetails: 'Claim Duke to take 3 coins.',
   exchange: 'Exchange',
-  exchangeDetails: 'Claim Ambassador to exchange Court cards.',
+  exchangeDetails: 'Claim Inquisitor to exchange one card with the Court.',
+  investigate: 'Investigate',
+  investigateDetails: 'Claim Inquisitor to inspect an opponent and optionally force a card exchange.',
+  convert: 'Change allegiance · 1',
+  convertDetails: 'Once per turn, pay 1 coin to switch factions before taking your action.',
   chooseActionTarget: 'Choose a target for a targeted action',
   assassinate: 'Assassinate · 3',
   steal: 'Steal',
@@ -76,8 +83,14 @@ const english = {
   viewExchangeCards: 'View exchange cards',
   chooseTwoCards: 'Choose exactly 2 cards to keep. Unselected cards return to the Court.',
   keepSelectedCards: 'Keep selected cards',
+  investigationTitle: 'Investigate {name}',
+  passForInvestigation: 'Pass the device to the active player. They may privately inspect this player’s cards.',
+  viewTargetCards: 'View target’s cards',
+  inspectAndReplace: 'Choose a card to return to the Court and replace, or finish without forcing an exchange.',
+  finishInvestigation: 'Finish investigation',
   gameEnded: 'Game ended',
   winsCoup: '{name} wins Coup!',
+  factionWins: 'The {faction} faction wins!',
   finalRoles: 'Final roles',
   newGame: 'New game',
   passAndPlay: 'Pass-and-play on one device. Private information depends on players keeping their hands hidden.',
@@ -86,7 +99,7 @@ const english = {
   roleDuke: 'Duke',
   roleAssassin: 'Assassin',
   roleCaptain: 'Captain',
-  roleAmbassador: 'Ambassador',
+  roleInquisitor: 'Inquisitor',
   roleContessa: 'Contessa',
   dukeClaim: 'Claim Duke to take 3 coins from the Court.',
   dukePower: 'Block Foreign Aid.',
@@ -94,8 +107,8 @@ const english = {
   assassinPower: 'Cannot block.',
   captainClaim: 'Claim Captain to steal up to 2 coins from a player.',
   captainPower: 'Block a Steal action targeting you.',
-  ambassadorClaim: 'Claim Ambassador to exchange cards with the Court.',
-  ambassadorPower: 'Block a Steal action targeting you.',
+  inquisitorClaim: 'Claim Inquisitor to exchange one card with the Court, or inspect a player and force a card exchange.',
+  inquisitorPower: 'Block a Steal action targeting you.',
   contessaClaim: 'No action claim.',
   contessaPower: 'Block an assassination targeting you.',
   messageLastStanding: '{name} is the last player standing.',
@@ -119,19 +132,32 @@ const english = {
   messageEliminatedBeforeAssassination: '{name} was eliminated before the assassination resolved.',
   messageBlockAccepted: "{name}'s block was accepted.",
   messageExchangeComplete: '{name} completed the exchange.',
+  messageFactionWins: '{faction} faction wins Coup!',
+  messageChangedAllegiance: '{name} changed allegiance to {faction}.',
+  messageInvestigating: '{name} is investigating {target}.',
+  messageInvestigationComplete: 'The investigation is complete.',
+  messageForcedExchange: '{name} forced {target} to exchange a card with the Court.',
   errorNoChallengeToPass: 'There is no challenged claim.',
   errorBlockDecision: 'Choose whether to block or allow the action.',
   errorNoClaimYet: 'There is no role claim to challenge yet.',
   errorPlayers: 'Coup requires 3-6 players.',
   errorNames: 'Enter a unique, non-empty name for every player.',
   errorFirstPlayer: 'Choose a valid first player.',
+  errorFactions: 'Assign players to both factions.',
   errorActivePlayer: 'The active player is no longer in the game.',
   errorMandatoryCoup: 'A player with 10 or more coins must launch a Coup.',
   errorCoupCost: 'A Coup costs 7 coins.',
   errorCoupTarget: 'Choose a living opponent to Coup.',
   errorAssassinationCost: 'An assassination costs 3 coins.',
   errorAssassinationTarget: 'Choose a living opponent to assassinate.',
+  errorFriendlyCoup: 'You cannot Coup a player in your faction.',
+  errorFriendlyAssassination: 'You cannot assassinate a player in your faction.',
+  errorConvertCost: 'Changing allegiance costs 1 coin.',
+  errorConvertOnce: 'You can only change allegiance once per turn.',
   errorStealTarget: 'Choose a living opponent to steal from.',
+  errorInvestigateTarget: 'Choose a living opponent to investigate.',
+  errorInvestigateCard: 'Choose a valid card to exchange.',
+  errorNoCourtCards: 'The Court has no cards available to exchange.',
   errorBlocker: 'Choose a living player other than the acting player to block.',
   errorBlockRole: 'That role cannot block this action.',
   errorBlockTarget: 'Only the targeted player may block this action.',
@@ -151,25 +177,28 @@ const english = {
 const vietnamese: Record<keyof typeof english, string> = {
   language: 'Ngôn ngữ trò chơi',
   sideProjects: 'Dự án phụ',
-  edition: 'Bản cơ bản · Luật tiêu chuẩn',
+  edition: 'Reformation · Chơi theo phe',
   playerCount: '3–6 người chơi',
   players: 'Người chơi',
   setupPlayers: 'Thiết lập người chơi',
   playerNumber: 'Người chơi {number}',
   playerName: 'Tên người chơi {number}',
-  enterNames: 'Nhập tên 3–6 người chơi theo thứ tự chiều kim đồng hồ. Mỗi người bắt đầu với 2 xu và 2 lá Ảnh hưởng bí mật. Người đi đầu cũng được chia bài ngẫu nhiên; thứ tự lượt là thứ tự người chơi bên dưới.',
+  enterNames: 'Nhập tên 3–6 người chơi theo thứ tự chiều kim đồng hồ và chọn phe cho từng người. Cả hai phe đều phải có người chơi. Mỗi người bắt đầu với 2 xu và 2 lá Ảnh hưởng bí mật.',
   firstPlayer: 'Người đi đầu',
-  baseOnly: 'Chỉ chơi Coup cơ bản. Không có vai mở rộng hoặc luật tự đặt.',
+  reformationEdition: 'Luật Reformation: chọn phe, đổi phe với giá 1 xu và loại bỏ phe đối địch.',
+  chooseFaction: 'Chọn phe cho {name}',
+  catholic: 'Công giáo',
+  protestant: 'Tin Lành',
   dealCards: 'Chia bài',
   rules: 'Hành động và luật chơi',
   roleReference: 'Tra cứu vai trò · mọi người đều xem được',
   roleAction: 'Tuyên bố hành động',
   roleBlock: 'Chặn',
   otherActions: 'Các hành động khác',
-  otherActionsDetails: 'Thu nhập: +1 xu. Viện trợ nước ngoài: +2 xu, có thể bị Công tước chặn. Đảo chính: trả 7 xu để mục tiêu mất Ảnh hưởng. Nếu bắt đầu lượt với ít nhất 10 xu, bạn bắt buộc phải Đảo chính.',
+  otherActionsDetails: 'Thu nhập: +1 xu. Viện trợ nước ngoài: +2 xu, có thể bị Công tước chặn. Đảo chính: trả 7 xu để đối thủ mất Ảnh hưởng. Bạn không thể Đảo chính hoặc ám sát người cùng phe. Nếu bắt đầu lượt với ít nhất 10 xu, bạn bắt buộc phải Đảo chính.',
   challenges: 'Thách thức',
   challengeRules: 'Bất kỳ người chơi còn trong ván nào khác đều có thể thách thức lời tuyên bố vai. Nếu người bị thách thức nói thật, họ trả lá bài đã chứng minh về Bộ bài Cung đình, xáo bài và rút lá thay thế; người thách thức mất Ảnh hưởng. Nếu nói dối, người đó mất Ảnh hưởng và hành động hoặc chặn bài thất bại.',
-  influenceRules: 'Người chơi mất một Ảnh hưởng khi thách thức sai, bị ám sát hoặc bị Đảo chính. Họ chọn lá bài sẽ lật. Mất cả hai lá sẽ bị loại. Người cuối cùng còn Ảnh hưởng sẽ thắng.',
+  influenceRules: 'Người chơi mất một Ảnh hưởng khi thách thức sai, bị ám sát hoặc bị Đảo chính. Họ chọn lá bài sẽ lật. Mất cả hai lá sẽ bị loại. Phe còn người chơi sống sót cuối cùng sẽ thắng.',
   standings: 'Tình trạng người chơi',
   turn: 'Đang lượt',
   activeTurnBadge: 'ĐANG ĐẾN LƯỢT',
@@ -195,7 +224,11 @@ const vietnamese: Record<keyof typeof english, string> = {
   tax: 'Thu thuế',
   taxDetails: 'Tuyên bố là Công tước để nhận 3 xu.',
   exchange: 'Đổi bài',
-  exchangeDetails: 'Tuyên bố là Đại sứ để đổi bài với Bộ bài Cung đình.',
+  exchangeDetails: 'Tuyên bố là Thẩm tra viên để đổi một lá với Bộ bài Cung đình.',
+  investigate: 'Điều tra',
+  investigateDetails: 'Tuyên bố là Thẩm tra viên để xem bài của đối thủ và có thể buộc họ đổi một lá.',
+  convert: 'Đổi phe · 1 xu',
+  convertDetails: 'Mỗi lượt một lần, trả 1 xu để đổi phe trước khi thực hiện hành động.',
   chooseActionTarget: 'Chọn mục tiêu cho hành động nhắm tới người chơi',
   assassinate: 'Ám sát · 3 xu',
   steal: 'Cướp xu',
@@ -222,8 +255,14 @@ const vietnamese: Record<keyof typeof english, string> = {
   viewExchangeCards: 'Xem bài đổi',
   chooseTwoCards: 'Chọn đúng 2 lá để giữ. Các lá không chọn sẽ trở về Bộ bài Cung đình.',
   keepSelectedCards: 'Giữ các lá đã chọn',
+  investigationTitle: 'Điều tra {name}',
+  passForInvestigation: 'Chuyển thiết bị cho người đang lượt để họ xem riêng bài của người chơi này.',
+  viewTargetCards: 'Xem bài mục tiêu',
+  inspectAndReplace: 'Chọn một lá để trả về Bộ bài Cung đình và đổi lá mới, hoặc kết thúc mà không ép đổi.',
+  finishInvestigation: 'Kết thúc điều tra',
   gameEnded: 'Ván đấu kết thúc',
   winsCoup: '{name} thắng Coup!',
+  factionWins: 'Phe {faction} chiến thắng!',
   finalRoles: 'Vai trò cuối ván',
   newGame: 'Ván mới',
   passAndPlay: 'Chơi lần lượt trên cùng một thiết bị. Thông tin bí mật chỉ được giữ kín nếu mọi người không để lộ bài.',
@@ -232,7 +271,7 @@ const vietnamese: Record<keyof typeof english, string> = {
   roleDuke: 'Công tước',
   roleAssassin: 'Sát thủ',
   roleCaptain: 'Đội trưởng',
-  roleAmbassador: 'Đại sứ',
+  roleInquisitor: 'Thẩm tra viên',
   roleContessa: 'Contessa',
   dukeClaim: 'Tuyên bố là Công tước để lấy 3 xu từ Bộ bài Cung đình.',
   dukePower: 'Chặn hành động Viện trợ nước ngoài.',
@@ -240,8 +279,8 @@ const vietnamese: Record<keyof typeof english, string> = {
   assassinPower: 'Không thể chặn.',
   captainClaim: 'Tuyên bố là Đội trưởng để cướp tối đa 2 xu từ một người chơi.',
   captainPower: 'Chặn hành động Cướp xu nhắm vào bạn.',
-  ambassadorClaim: 'Tuyên bố là Đại sứ để đổi bài với Bộ bài Cung đình.',
-  ambassadorPower: 'Chặn hành động Cướp xu nhắm vào bạn.',
+  inquisitorClaim: 'Tuyên bố là Thẩm tra viên để đổi một lá với Bộ bài Cung đình, hoặc xem bài người chơi khác và buộc họ đổi một lá.',
+  inquisitorPower: 'Chặn hành động Cướp xu nhắm vào bạn.',
   contessaClaim: 'Không có hành động để tuyên bố.',
   contessaPower: 'Chặn vụ ám sát nhắm vào bạn.',
   messageLastStanding: '{name} là người cuối cùng còn trụ lại.',
@@ -265,19 +304,32 @@ const vietnamese: Record<keyof typeof english, string> = {
   messageEliminatedBeforeAssassination: '{name} đã bị loại trước khi vụ ám sát được thực hiện.',
   messageBlockAccepted: 'Lệnh chặn của {name} đã được chấp nhận.',
   messageExchangeComplete: '{name} đã đổi bài xong.',
+  messageFactionWins: 'Phe {faction} chiến thắng Coup!',
+  messageChangedAllegiance: '{name} đã đổi phe sang {faction}.',
+  messageInvestigating: '{name} đang điều tra {target}.',
+  messageInvestigationComplete: 'Cuộc điều tra đã kết thúc.',
+  messageForcedExchange: '{name} đã buộc {target} đổi một lá với Bộ bài Cung đình.',
   errorNoChallengeToPass: 'Hiện không có lời tuyên bố nào đang bị thách thức.',
   errorBlockDecision: 'Hãy chọn chặn hoặc cho phép hành động.',
   errorNoClaimYet: 'Chưa có lời tuyên bố vai nào để thách thức.',
   errorPlayers: 'Coup cần từ 3 đến 6 người chơi.',
   errorNames: 'Hãy nhập tên riêng, không để trống cho từng người chơi.',
   errorFirstPlayer: 'Hãy chọn người đi đầu hợp lệ.',
+  errorFactions: 'Hãy phân người chơi vào cả hai phe.',
   errorActivePlayer: 'Người đang lượt không còn trong ván.',
   errorMandatoryCoup: 'Người có ít nhất 10 xu bắt buộc phải tiến hành Đảo chính.',
   errorCoupCost: 'Một lần Đảo chính tốn 7 xu.',
   errorCoupTarget: 'Hãy chọn một đối thủ còn trong ván để Đảo chính.',
   errorAssassinationCost: 'Một vụ ám sát tốn 3 xu.',
   errorAssassinationTarget: 'Hãy chọn một đối thủ còn trong ván để ám sát.',
+  errorFriendlyCoup: 'Bạn không thể Đảo chính người cùng phe.',
+  errorFriendlyAssassination: 'Bạn không thể ám sát người cùng phe.',
+  errorConvertCost: 'Đổi phe tốn 1 xu.',
+  errorConvertOnce: 'Mỗi lượt bạn chỉ được đổi phe một lần.',
   errorStealTarget: 'Hãy chọn một đối thủ còn trong ván để cướp xu.',
+  errorInvestigateTarget: 'Hãy chọn một đối thủ còn trong ván để điều tra.',
+  errorInvestigateCard: 'Hãy chọn một lá bài hợp lệ để đổi.',
+  errorNoCourtCards: 'Bộ bài Cung đình không còn lá để đổi.',
   errorBlocker: 'Hãy chọn một người còn trong ván, không phải người đang thực hiện hành động, để chặn.',
   errorBlockRole: 'Vai trò này không thể chặn hành động đó.',
   errorBlockTarget: 'Chỉ người bị nhắm tới mới có thể chặn hành động này.',
@@ -298,7 +350,7 @@ const roleKeys: Record<CoupRole, keyof typeof english> = {
   Duke: 'roleDuke',
   Assassin: 'roleAssassin',
   Captain: 'roleCaptain',
-  Ambassador: 'roleAmbassador',
+  Inquisitor: 'roleInquisitor',
   Contessa: 'roleContessa',
 }
 
@@ -306,7 +358,7 @@ const roleDetailKeys: Record<CoupRole, { action: keyof typeof english; block: ke
   Duke: { action: 'dukeClaim', block: 'dukePower' },
   Assassin: { action: 'assassinClaim', block: 'assassinPower' },
   Captain: { action: 'captainClaim', block: 'captainPower' },
-  Ambassador: { action: 'ambassadorClaim', block: 'ambassadorPower' },
+  Inquisitor: { action: 'inquisitorClaim', block: 'inquisitorPower' },
   Contessa: { action: 'contessaClaim', block: 'contessaPower' },
 }
 
@@ -337,13 +389,21 @@ export function localizeCoupError(language: CoupLanguage, error: string): string
     'Coup requires 3-6 players.': 'errorPlayers',
     'Enter a unique, non-empty name for every player.': 'errorNames',
     'Choose a valid first player.': 'errorFirstPlayer',
+    'Assign players to both factions.': 'errorFactions',
     'The active player is no longer in the game.': 'errorActivePlayer',
     'A player with 10 or more coins must launch a Coup.': 'errorMandatoryCoup',
     'A Coup costs 7 coins.': 'errorCoupCost',
     'Choose a living opponent to Coup.': 'errorCoupTarget',
     'An assassination costs 3 coins.': 'errorAssassinationCost',
     'Choose a living opponent to assassinate.': 'errorAssassinationTarget',
+    'You cannot Coup a player in your faction.': 'errorFriendlyCoup',
+    'You cannot assassinate a player in your faction.': 'errorFriendlyAssassination',
+    'Changing allegiance costs 1 coin.': 'errorConvertCost',
+    'You can only change allegiance once per turn.': 'errorConvertOnce',
     'Choose a living opponent to steal from.': 'errorStealTarget',
+    'Choose a living opponent to investigate.': 'errorInvestigateTarget',
+    'Choose a valid card to exchange.': 'errorInvestigateCard',
+    'The Court has no cards available to exchange.': 'errorNoCourtCards',
     'Choose a living player other than the acting player to block.': 'errorBlocker',
     'That role cannot block this action.': 'errorBlockRole',
     'Only the targeted player may block this action.': 'errorBlockTarget',
@@ -362,8 +422,17 @@ export function localizeCoupError(language: CoupLanguage, error: string): string
 
 function localizeMessageContent(language: CoupLanguage, message: string): string {
   const t = coupTranslator(language)
-  let match = message.match(/^(.+ lost (?:Duke|Assassin|Captain|Ambassador|Contessa)\.) (.+)$/)
+  let match = message.match(/^(.+ lost (?:Duke|Assassin|Captain|Inquisitor|Contessa)\.) (.+)$/)
   if (match) return `${localizeMessageContent(language, match[1])} ${localizeMessageContent(language, match[2])}`
+  match = message.match(/^(Catholic|Protestant) faction wins Coup\.$/)
+  if (match) return t('messageFactionWins', { faction: t(match[1] === 'Catholic' ? 'catholic' : 'protestant') })
+  match = message.match(/^(.+) changed allegiance to (Catholic|Protestant)\.$/)
+  if (match) return t('messageChangedAllegiance', { name: match[1], faction: t(match[2] === 'Catholic' ? 'catholic' : 'protestant') })
+  match = message.match(/^(.+) is investigating (.+)\.$/)
+  if (match) return t('messageInvestigating', { name: match[1], target: match[2] })
+  if (message === 'The investigation is complete.') return t('messageInvestigationComplete')
+  match = message.match(/^(.+) forced (.+) to exchange a card with the Court\.$/)
+  if (match) return t('messageForcedExchange', { name: match[1], target: match[2] })
   match = message.match(/^(.+) is the last player standing\.$/)
   if (match) return t('messageLastStanding', { name: match[1] })
   if (message === 'No players remain.') return t('messageNoPlayers')
@@ -381,17 +450,17 @@ function localizeMessageContent(language: CoupLanguage, message: string): string
   if (match) return t('messageBlockSucceeded', { name: match[1] })
   match = message.match(/^(.+) requested Foreign Aid\.$/)
   if (match) return t('messageAidRequested', { name: match[1] })
-  match = message.match(/^(.+) claims (Duke|Assassin|Captain|Ambassador|Contessa)\.$/)
+  match = message.match(/^(.+) claims (Duke|Assassin|Captain|Inquisitor|Contessa)\.$/)
   if (match) return t('messageClaimsRole', { name: match[1], role: localizeCoupRole(language, match[2] as CoupRole) })
-  match = message.match(/^(.+) claims (Duke|Assassin|Captain|Ambassador|Contessa) to block the action\.$/)
+  match = message.match(/^(.+) claims (Duke|Assassin|Captain|Inquisitor|Contessa) to block the action\.$/)
   if (match) return t('messageClaimsBlock', { name: match[1], role: localizeCoupRole(language, match[2] as CoupRole) })
-  match = message.match(/^(.+) proved the (Duke|Assassin|Captain|Ambassador|Contessa) claim\.$/)
+  match = message.match(/^(.+) proved the (Duke|Assassin|Captain|Inquisitor|Contessa) claim\.$/)
   if (match) return t('messageProvedClaim', { name: match[1], role: localizeCoupRole(language, match[2] as CoupRole) })
   match = message.match(/^(.+) must lose influence for the incorrect challenge\.$/)
   if (match) return t('messageChallengeLoss', { name: match[1] })
   match = message.match(/^(.+) must lose influence for the false claim\.$/)
   if (match) return t('messageFalseClaimLoss', { name: match[1] })
-  match = message.match(/^(.+) lost (Duke|Assassin|Captain|Ambassador|Contessa)\.(?:\s*(.*))?$/)
+  match = message.match(/^(.+) lost (Duke|Assassin|Captain|Inquisitor|Contessa)\.(?:\s*(.*))?$/)
   if (match) {
     const lost = t('messageLostRole', { name: match[1], role: localizeCoupRole(language, match[2] as CoupRole) })
     return match[3] ? `${lost} ${localizeMessageContent(language, match[3])}` : lost

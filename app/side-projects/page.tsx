@@ -22,10 +22,10 @@ export default function SideProjects() {
       tags: ['Board Game', 'Social Deduction', 'Host Tool'],
     },
     {
-      title: 'Coup',
-      description: 'A pass-and-play bluffing game with hidden influence cards, role claims, challenges, blocks, and coups.',
+      title: 'Coup: Reformation',
+      description: 'A pass-and-play bluffing game with Catholic and Protestant factions, hidden influence cards, and the Inquisitor.',
       href: '/side-projects/coup',
-      tags: ['Board Game', 'Bluffing', 'Pass-and-Play'],
+      tags: ['Board Game', 'Team Play', 'Pass-and-Play'],
     },
     {
       title: '🎮 2048 — Puzzle Game',
