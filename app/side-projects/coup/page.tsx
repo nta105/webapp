@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Be_Vietnam_Pro } from 'next/font/google'
 import { ArrowLeft, Coins, Eye, EyeOff, Flag, LockKeyhole, RotateCcw, Swords, Users } from 'lucide-react'
-import { advanceCoup, createCoup, coupFactions, coupRoles } from '@/lib/coup-rules'
-import type { CoupAction, CoupActionName, CoupFaction, CoupGame, CoupRole } from '@/lib/coup-rules'
+import { advanceCoup, canTargetCoupPlayer, createCoup, coupFactions, coupRoles } from '@/lib/coup-rules'
+import type { CoupAction, CoupActionName, CoupFaction, CoupGame, CoupPlayer, CoupRole } from '@/lib/coup-rules'
 import { coupTranslator, localizeCoupError, localizeCoupMessage, localizeCoupRole, localizeCoupRoleDetails } from '@/lib/coup-i18n'
 import type { CoupLanguage } from '@/lib/coup-i18n'
 
@@ -55,13 +55,27 @@ export default function CoupPage() {
   const t = coupTranslator(language)
   const [playerCount, setPlayerCount] = useState(4)
   const [names, setNames] = useState(['', '', '', ''])
-  const [factions, setFactions] = useState<CoupFaction[]>(['Catholic', 'Protestant', 'Catholic', 'Protestant'])
+  const [factions, setFactions] = useState<CoupFaction[]>(['Azure', 'Crimson', 'Azure', 'Crimson'])
   const [firstPlayer, setFirstPlayer] = useState(0)
   const [game, setGame] = useState<CoupGame | null>(null)
   const [privateOpen, setPrivateOpen] = useState(false)
+  const [cardCheckId, setCardCheckId] = useState<number | null>(null)
   const [targetId, setTargetId] = useState<number | null>(null)
   const [exchangeKeep, setExchangeKeep] = useState<number[]>([])
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const hidePrivateCards = () => {
+      setPrivateOpen(false)
+      setCardCheckId(null)
+    }
+    window.addEventListener('blur', hidePrivateCards)
+    document.addEventListener('visibilitychange', hidePrivateCards)
+    return () => {
+      window.removeEventListener('blur', hidePrivateCards)
+      document.removeEventListener('visibilitychange', hidePrivateCards)
+    }
+  }, [])
 
   const changePlayerCount = (count: number) => {
     setPlayerCount(count)
@@ -74,6 +88,7 @@ export default function CoupPage() {
     try {
       setGame(createCoup(names, firstPlayer, Math.random, factions))
       setPrivateOpen(false)
+      setCardCheckId(null)
       setTargetId(null)
       setExchangeKeep([])
       setError('')
@@ -84,9 +99,10 @@ export default function CoupPage() {
 
   const act = (action: CoupAction) => {
     if (!game) return
+    setPrivateOpen(false)
+    setCardCheckId(null)
     try {
       setGame(advanceCoup(game, action))
-      setPrivateOpen(false)
       setTargetId(null)
       setExchangeKeep([])
       setError('')
@@ -99,6 +115,7 @@ export default function CoupPage() {
     if (window.confirm(t('confirmNewGame'))) {
       setGame(null)
       setPrivateOpen(false)
+      setCardCheckId(null)
       setTargetId(null)
       setExchangeKeep([])
       setError('')
@@ -107,7 +124,9 @@ export default function CoupPage() {
 
   const current = game?.players[game.currentPlayer]
   const targetOptions = game?.players.filter(player => player.alive && player.id !== game.currentPlayer) ?? []
-  const attackTargetOptions = targetOptions.filter(player => player.faction !== current?.faction)
+  const attackTargetOptions = game ? targetOptions.filter(player => canTargetCoupPlayer(game, game.currentPlayer, player.id)) : []
+  const aidBlockers = game?.pending ? game.players.filter(player => canTargetCoupPlayer(game, game.pending!.actorId, player.id)) : []
+  const checkedPlayer = cardCheckId === null ? undefined : game?.players[cardCheckId]
   const challengedClaimantId = game?.pending?.stage === 'blockChallenge' ? game.pending.blockerId : game?.pending?.actorId
   const challengers = game?.players.filter(player => player.alive && player.id !== challengedClaimantId) ?? []
   const mandatoryCoup = !!current && game?.mustCoup === true
@@ -163,7 +182,7 @@ export default function CoupPage() {
                   <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
                     <input id={`coup-player-${index}`} value={name} maxLength={40} autoComplete="off" placeholder={t('playerName', { number: index + 1 })} onChange={event => setNames(previous => previous.map((entry, position) => position === index ? event.target.value : entry))} className={input} />
                     <select aria-label={t('chooseFaction', { name: name.trim() || t('playerName', { number: index + 1 }) })} value={factions[index]} onChange={event => setFactions(previous => previous.map((faction, position) => position === index ? event.target.value as CoupFaction : faction))} className={`${input} sm:w-40`}>
-                      {coupFactions.map(faction => <option key={faction} value={faction} className="bg-[#171713]">{t(faction === 'Catholic' ? 'catholic' : 'protestant')}</option>)}
+                      {coupFactions.map(faction => <option key={faction} value={faction} className="bg-[#171713]">{t(faction === 'Azure' ? 'azure' : 'crimson')}</option>)}
                     </select>
                   </div>
                 </li>
@@ -188,6 +207,7 @@ export default function CoupPage() {
                 <div className="rounded-lg border border-white/10 p-3"><h3 className="mb-1 font-semibold">{t('challenges')}</h3><p className="text-xs leading-relaxed text-white/60">{t('challengeRules')}</p></div>
               </div>
               <p className="mt-3 text-xs leading-relaxed text-white/45">{t('influenceRules')}</p>
+              <p className="mt-3 text-xs leading-relaxed text-white/45">{t('factionRules')}</p>
             </details>
           </section>
         ) : (
@@ -200,7 +220,7 @@ export default function CoupPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <h2 className={`break-words ${isTurnPlayer ? 'text-xl font-bold text-amber-100' : 'font-semibold'}`}>{player.name}{isTurnPlayer ? ` · ${t('turn')}` : ''}</h2>
-                        <p className="mt-1 text-xs text-white/55">{t(player.faction === 'Catholic' ? 'catholic' : 'protestant')} · {player.alive ? `${player.cards.length} ${player.cards.length === 1 ? t('influence') : t('influences')}` : t('eliminated')}</p>
+                        <p className={`mt-1 text-xs ${player.faction === 'Azure' ? 'text-sky-200' : 'text-rose-200'}`}>{t(player.faction === 'Azure' ? 'azure' : 'crimson')} · {player.alive ? `${player.cards.length} ${player.cards.length === 1 ? t('influence') : t('influences')}` : t('eliminated')}</p>
                       </div>
                       <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm"><Coins size={15} className="text-amber-200" />{player.coins}</span>
                     </div>
@@ -209,12 +229,19 @@ export default function CoupPage() {
                       {player.revealed.map((role, index) => <span key={`${role}-${index}`} className="rounded-md border border-rose-200/25 bg-rose-200/10 px-2 py-1 text-xs text-rose-100/80">{localizeCoupRole(language, role)} · {t('revealed')}</span>)}
                       {player.cards.map((_, index) => <span key={`hidden-${index}`} className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-xs text-white/45">{t('hiddenInfluence')}</span>)}
                     </div>
+                    {player.alive && game.phase !== 'reveal' && game.phase !== 'ended' && (
+                      <button type="button" onClick={() => { setPrivateOpen(false); setCardCheckId(player.id) }} className={`${secondary} mt-3`} aria-label={t('checkCardsFor', { name: player.name })}><LockKeyhole size={14} /> {t('checkCards')}</button>
+                    )}
                   </article>
                 )
               })}
             </section>
 
             <RoleReference language={language} />
+
+            <p className="mb-4 text-xs leading-relaxed text-white/55">{t('factionRules')}</p>
+            {privateOpen && <button type="button" onClick={() => setPrivateOpen(false)} className={`${secondary} mb-4`}><EyeOff size={16} /> {t('hidePrivateCards')}</button>}
+            {checkedPlayer?.alive && <PrivateCardCheck player={checkedPlayer} language={language} onClose={() => setCardCheckId(null)} />}
 
             {game.message && <p role="status" aria-live="polite" className="mb-4 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/70">{localizeCoupMessage(language, game.message)}</p>}
 
@@ -241,11 +268,6 @@ export default function CoupPage() {
             {game.phase === 'turn' && current && (
               <section className="rounded-2xl border border-white/15 bg-white/[0.03] p-5 sm:p-8">
                 <h2 className="mb-2 text-xl">{t('turnOf', { name: current.name })}</h2>
-                {!game.convertedThisTurn && current.coins > 0 && (
-                  <div className="mb-5 max-w-sm">
-                    <ActionCard title={t('convert')} detail={t('convertDetails')} onClick={() => startAction('convert')} />
-                  </div>
-                )}
                 {mandatoryCoup ? (
                   <>
                     <p className="mb-5 text-sm text-amber-100/80">{t('mandatoryCoup')}</p>
@@ -260,13 +282,14 @@ export default function CoupPage() {
                       <ActionCard title={t('foreignAid')} detail={t('foreignAidDetails')} onClick={() => startAction('foreignAid')} />
                       <ActionCard title={t('tax')} detail={t('taxDetails')} onClick={() => startAction('tax')} />
                       <ActionCard title={t('exchange')} detail={t('exchangeDetails')} onClick={() => startAction('exchange')} />
-                      <ActionCard title={t('investigate')} detail={t('investigateDetails')} onClick={() => startAction('investigate')} />
+                      <ActionCard title={t('convert')} detail={t('convertDetails')} disabled={current.coins < 1} onClick={() => startAction('convert')} />
                     </div>
                     <div className="grid gap-3 rounded-xl border border-white/10 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
                       <TargetPicker players={targetOptions} targetId={targetId} onChange={setTargetId} label={t('chooseActionTarget')} emptyLabel={t('choosePlayer')} />
                       <div className="flex flex-wrap gap-2">
                         <button type="button" disabled={current.coins < 3 || targetId === null || !attackTargetOptions.some(player => player.id === targetId)} onClick={() => startAction('assassinate')} className={`${button} bg-rose-200 text-[#351b23] hover:bg-rose-100`}>{t('assassinate')}</button>
-                        <button type="button" disabled={targetId === null} onClick={() => startAction('steal')} className={secondary}>{t('steal')}</button>
+                        <button type="button" disabled={targetId === null || !attackTargetOptions.some(player => player.id === targetId)} onClick={() => startAction('steal')} className={secondary}>{t('steal')}</button>
+                        <button type="button" disabled={targetId === null} onClick={() => startAction('investigate')} className={secondary}>{t('investigate')}</button>
                         <button type="button" disabled={current.coins < 7 || targetId === null || !attackTargetOptions.some(player => player.id === targetId)} onClick={() => startAction('coup')} className={secondary}>{t('coup')}</button>
                       </div>
                     </div>
@@ -298,7 +321,7 @@ export default function CoupPage() {
                       <button type="button" onClick={() => act({ type: 'allow' })} className={primary}>{t('noBlock')}</button>
                     </div>
                     {game.pending.action === 'foreignAid' ? (
-                      <div className="flex flex-wrap gap-2">{game.players.filter(player => player.alive && player.id !== game.pending!.actorId).map(player => <button key={player.id} type="button" onClick={() => act({ type: 'block', playerId: player.id, role: 'Duke' })} className={secondary}>{t('blockAs', { role: localizeCoupRole(language, 'Duke'), name: player.name })}</button>)}</div>
+                      <div className="flex flex-wrap gap-2">{aidBlockers.map(player => <button key={player.id} type="button" onClick={() => act({ type: 'block', playerId: player.id, role: 'Duke' })} className={secondary}>{t('blockAs', { role: localizeCoupRole(language, 'Duke'), name: player.name })}</button>)}</div>
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         {(game.pending.action === 'assassinate' ? ['Contessa'] : ['Captain', 'Inquisitor'] as CoupRole[]).map(role => <button key={role} type="button" onClick={() => act({ type: 'block', playerId: game.pending!.targetId!, role: role as CoupRole })} className={secondary}>{t('blockAs', { role: localizeCoupRole(language, role as CoupRole), name: game.players[game.pending!.targetId!].name })}</button>)}
@@ -350,18 +373,35 @@ export default function CoupPage() {
                   </>
                 ) : (
                   <>
-                    <p className="mb-4 text-sm text-white/55">{t('chooseTwoCards')}</p>
+                    <p className="mb-4 text-sm text-white/55">{t('chooseKeepCards', { count: current.cards.length })}</p>
                     <div className="mb-5 flex flex-wrap justify-center gap-3">{game.exchangeOptions.map((role, index) => {
                       const selected = exchangeKeep.includes(index)
-                      return <button key={index} type="button" aria-pressed={selected} onClick={() => setExchangeKeep(previous => selected ? previous.filter(item => item !== index) : previous.length < 2 ? [...previous, index] : previous)} className={`rounded-xl border px-5 py-4 text-base font-semibold ${selected ? 'border-amber-200 bg-amber-200/15 text-amber-100' : 'border-white/15 bg-black/20 text-white/70'}`}>{localizeCoupRole(language, role)}</button>
+                      return <button key={index} type="button" aria-pressed={selected} onClick={() => setExchangeKeep(previous => selected ? previous.filter(item => item !== index) : previous.length < current.cards.length ? [...previous, index] : previous)} className={`rounded-xl border px-5 py-4 text-base font-semibold ${selected ? 'border-amber-200 bg-amber-200/15 text-amber-100' : 'border-white/15 bg-black/20 text-white/70'}`}>{localizeCoupRole(language, role)}</button>
                     })}</div>
-                    <button type="button" disabled={exchangeKeep.length !== 2} onClick={() => act({ type: 'exchange', playerId: current.id, keep: exchangeKeep })} className={primary}>{t('keepSelectedCards')}</button>
+                    <button type="button" disabled={exchangeKeep.length !== current.cards.length} onClick={() => act({ type: 'exchange', playerId: current.id, keep: exchangeKeep })} className={primary}>{t('keepSelectedCards')}</button>
                   </>
                 )}
               </section>
             )}
 
-            {game.phase === 'investigate' && current && game.pending?.targetId !== undefined && (
+            {game.phase === 'inspectChoice' && game.pending?.targetId !== undefined && (
+              <section className="mx-auto max-w-xl rounded-2xl border border-violet-200/20 bg-violet-200/[0.04] p-6 text-center">
+                <h2 className="mb-2 text-xl">{t('chooseInspectionCard', { name: game.players[game.pending.targetId].name })}</h2>
+                {!privateOpen ? (
+                  <>
+                    <p className="mb-5 text-sm text-white/55">{t('passToInspectionTarget')}</p>
+                    <button type="button" onClick={() => setPrivateOpen(true)} className={primary}><Eye size={16} /> {t('viewCards')}</button>
+                  </>
+                ) : (
+                  <>
+                    <p className="mb-4 text-sm text-white/55">{t('inspectionChoiceDetails')}</p>
+                    <div className="flex flex-wrap justify-center gap-3">{game.players[game.pending.targetId].cards.map((role, index) => <button key={index} type="button" onClick={() => act({ type: 'showForInspection', playerId: game.pending!.targetId!, cardIndex: index })} className={secondary}>{localizeCoupRole(language, role)}</button>)}</div>
+                  </>
+                )}
+              </section>
+            )}
+
+            {game.phase === 'investigate' && current && game.pending?.targetId !== undefined && game.inspectedCardIndex !== null && (
               <section className="mx-auto max-w-xl rounded-2xl border border-violet-200/20 bg-violet-200/[0.04] p-6 text-center">
                 <LockKeyhole className="mx-auto mb-4 text-violet-100/60" size={28} />
                 <h2 className="mb-2 text-xl">{t('investigationTitle', { name: game.players[game.pending.targetId].name })}</h2>
@@ -373,7 +413,8 @@ export default function CoupPage() {
                 ) : (
                   <>
                     <p className="mb-4 text-sm text-white/55">{t('inspectAndReplace')}</p>
-                    <div className="mb-5 flex flex-wrap justify-center gap-3">{game.players[game.pending.targetId].cards.map((role, index) => <button key={index} type="button" disabled={game.deck.length === 0} onClick={() => act({ type: 'forceExchange', cardIndex: index })} className="rounded-xl border border-violet-200/25 bg-violet-200/[0.08] px-5 py-4 text-base font-semibold text-violet-100 disabled:opacity-40">{localizeCoupRole(language, role)}</button>)}</div>
+                    <p className="mb-5 rounded-xl border border-violet-200/25 bg-violet-200/[0.08] px-5 py-4 text-base font-semibold text-violet-100">{localizeCoupRole(language, game.players[game.pending.targetId].cards[game.inspectedCardIndex])}</p>
+                    <button type="button" disabled={game.deck.length === 0} onClick={() => act({ type: 'forceExchange' })} className={`${primary} mb-3`}>{t('forceExchange')}</button>
                     <button type="button" onClick={() => act({ type: 'finishInvestigation' })} className={secondary}>{t('finishInvestigation')}</button>
                   </>
                 )}
@@ -382,10 +423,10 @@ export default function CoupPage() {
 
             {game.phase === 'ended' && (
               <section className="rounded-2xl border border-amber-200/20 bg-amber-200/[0.04] p-6 sm:p-8">
-                <h2 className={`mb-2 text-3xl text-amber-100 ${language === 'vi' ? vietnameseFont.className : 'font-serif'}`}>{game.winningFaction ? t('factionWins', { faction: t(game.winningFaction === 'Catholic' ? 'catholic' : 'protestant') }) : game.winner === null ? t('gameEnded') : t('winsCoup', { name: game.players[game.winner].name })}</h2>
+                <h2 className={`mb-2 text-3xl text-amber-100 ${language === 'vi' ? vietnameseFont.className : 'font-serif'}`}>{game.winner === null ? t('gameEnded') : t('winsCoup', { name: game.players[game.winner].name })}</h2>
                 <p className="mb-5 text-sm text-white/60">{localizeCoupMessage(language, game.message)}</p>
                 <h3 className="mb-3 text-sm font-semibold text-white/70">{t('finalRoles')}</h3>
-                <ul className="mb-6 grid gap-2 sm:grid-cols-2">{game.players.map(player => <li key={player.id} className="flex justify-between gap-3 rounded-lg border border-white/10 p-3 text-sm"><span>{player.name} · {t(player.faction === 'Catholic' ? 'catholic' : 'protestant')}</span><span className="text-right text-white/55">{[...player.revealed, ...player.cards].map(role => localizeCoupRole(language, role)).join(', ') || t('eliminated')}</span></li>)}</ul>
+                <ul className="mb-6 grid gap-2 sm:grid-cols-2">{game.players.map(player => <li key={player.id} className="flex justify-between gap-3 rounded-lg border border-white/10 p-3 text-sm"><span>{player.name} · {t(player.faction === 'Azure' ? 'azure' : 'crimson')}</span><span className="text-right text-white/55">{[...player.revealed, ...player.cards].map(role => localizeCoupRole(language, role)).join(', ') || t('eliminated')}</span></li>)}</ul>
                 <button type="button" onClick={reset} className={secondary}><RotateCcw size={16} /> {t('newGame')}</button>
               </section>
             )}
@@ -403,9 +444,50 @@ export default function CoupPage() {
   )
 }
 
-function ActionCard({ title, detail, onClick }: { title: string; detail: string; onClick: () => void }) {
+function PrivateCardCheck({ player, language, onClose }: { player: CoupPlayer; language: CoupLanguage; onClose: () => void }) {
+  const dialog = useRef<HTMLDialogElement>(null)
+  const hideButton = useRef<HTMLButtonElement>(null)
+  const [shown, setShown] = useState(false)
+  const t = coupTranslator(language)
+
+  useEffect(() => {
+    const element = dialog.current
+    element?.showModal()
+    return () => element?.close()
+  }, [])
+
+  useEffect(() => {
+    if (!shown) return
+    hideButton.current?.focus()
+    const timeout = window.setTimeout(() => setShown(false), 20000)
+    return () => window.clearTimeout(timeout)
+  }, [shown])
+
   return (
-    <button type="button" onClick={onClick} className="rounded-xl border border-white/15 p-4 text-left transition-colors hover:border-amber-200/40 hover:bg-amber-200/[0.04]">
+    <dialog ref={dialog} onCancel={onClose} onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); onClose() } }} aria-labelledby="private-card-check-title" className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-amber-200/30 bg-[#171713] p-6 text-center text-white shadow-2xl backdrop:bg-black/80">
+      <LockKeyhole className="mx-auto mb-4 text-amber-200" size={28} />
+      <h2 id="private-card-check-title" className="mb-3 text-xl font-semibold">{t('currentCardsFor', { name: player.name })}</h2>
+      {shown ? (
+        <>
+          <p className="mb-4 text-sm text-white/60">{t('cardCheckPrivacy')}</p>
+          <ul className="mb-5 flex flex-wrap justify-center gap-3">
+            {player.cards.map((role, index) => <li key={index} className="rounded-xl border border-amber-200/30 bg-amber-200/[0.08] px-5 py-4 text-lg font-semibold text-amber-100">{localizeCoupRole(language, role)}</li>)}
+          </ul>
+        </>
+      ) : (
+        <>
+          <p className="mb-5 text-sm text-white/60">{t('cardCheckHandoff', { name: player.name })}</p>
+          <button type="button" onClick={() => setShown(true)} className={`${primary} mb-3`}><Eye size={16} /> {t('confirmCardOwner', { name: player.name })}</button>
+        </>
+      )}
+      <div><button ref={hideButton} type="button" onClick={onClose} className={secondary}><EyeOff size={16} /> {t('hideAndReturn')}</button></div>
+    </dialog>
+  )
+}
+
+function ActionCard({ title, detail, onClick, disabled = false }: { title: string; detail: string; onClick: () => void; disabled?: boolean }) {
+  return (
+    <button type="button" onClick={onClick} disabled={disabled} className="rounded-xl border border-white/15 p-4 text-left transition-colors hover:border-amber-200/40 hover:bg-amber-200/[0.04] disabled:cursor-not-allowed disabled:opacity-40">
       <span className="mb-1 block font-semibold text-amber-100">{title}</span>
       <span className="block text-xs leading-relaxed text-white/55">{detail}</span>
     </button>

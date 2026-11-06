@@ -23,9 +23,9 @@ export default function SideProjects() {
     },
     {
       title: 'Coup: Reformation',
-      description: 'A pass-and-play bluffing game with Catholic and Protestant factions, hidden influence cards, and the Inquisitor.',
+      description: 'A pass-and-play bluffing game with temporary Azure and Crimson factions, private card checks, and the Inquisitor. Last player standing wins.',
       href: '/side-projects/coup',
-      tags: ['Board Game', 'Team Play', 'Pass-and-Play'],
+      tags: ['Board Game', 'Bluffing', 'Pass-and-Play'],
     },
     {
       title: '🎮 2048 — Puzzle Game',
