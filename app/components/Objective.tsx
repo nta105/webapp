@@ -10,10 +10,11 @@ export default function Objective() {
         </div>
         <div className="bg-white/5 rounded-xl p-5 border border-white/5">
           <p className="text-white/70 leading-relaxed text-[15px]">
-            Results-driven Software Engineer with a 3.94 GPA and experience in full-stack development, AI applications, and mobile app
-            development. Proficient in software development lifecycle (SDLC), Agile methodologies, REST APIs, and cloud technologies.
-            Passionate about AI, automation, and scalable software solutions. Proven ability to design, develop, and deploy web, mobile, and
-            desktop applications using Next.js, Firebase, Kotlin, and cloud platforms.
+            Semiconductor Engineer with hands-on experience in integrated voltage regulator (IVR) product engineering, hardware
+            qualification, reliability testing, and automated test development for AI data-center power applications. Currently an
+            Associate Engineer, System Applications at Analog Devices, specializing in IVR product qualification (HTOL, ESD, and
+            latch-up testing) and end-to-end ATE test program development. Holds a B.S. in Computer Science with a 3.955 GPA,
+            bringing strong C++ and Python programming skills to semiconductor testing, automation, and engineering workflows.
           </p>
         </div>
       </div>

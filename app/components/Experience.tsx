@@ -9,6 +9,32 @@ export default function Experience() {
           <h2 className="text-2xl font-bold text-white">Work Experience</h2>
         </div>
         <div className="space-y-4">
+          {/* Analog Devices */}
+          <div className="bg-white/5 rounded-xl p-5 border border-white/5 hover:bg-white/[0.07] transition-all">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1">
+              <h3 className="text-lg font-semibold text-white">Analog Devices</h3>
+              <span className="text-sm text-white/50 bg-white/5 px-2.5 py-0.5 rounded-full border border-white/10">Milpitas, CA</span>
+            </div>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+              <p className="text-blue-400 font-medium">Associate Engineer, System Applications (joined via Analog Devices&apos; acquisition of Empower Semiconductor)</p>
+              <p className="text-sm text-white/40">July 2026 – Present</p>
+            </div>
+            <div className="space-y-2.5 text-sm text-white/70">
+              <div className="flex items-start gap-2">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
+                <p>Perform laboratory-level hardware testing for Integrated Voltage Regulator (IVR) products, executing product qualification plans and conducting reliability tests, including High-Temperature Operating Life (HTOL), Electrostatic Discharge (ESD), and Latch-Up (LU) testing.</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
+                <p>Develop end-to-end Automated Test Equipment (ATE) test programs for the SOLO product, converting existing engineering bench-test code into production-ready test scripts within the ATE framework.</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
+                <p>Collaborate with engineering teams to execute qualification procedures, validate hardware performance, and support product reliability evaluation.</p>
+              </div>
+            </div>
+          </div>
+
           {/* Empower Semiconductor */}
           <div className="bg-white/5 rounded-xl p-5 border border-white/5 hover:bg-white/[0.07] transition-all">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1">
@@ -17,7 +43,7 @@ export default function Experience() {
             </div>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1">
               <p className="text-blue-400 font-medium">Product & Test Engineer</p>
-              <p className="text-sm text-white/40">May 2026 – Present</p>
+              <p className="text-sm text-white/40">February 2026 – July 2026</p>
             </div>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
               <p className="text-blue-400 font-medium">Product & Test Engineering Intern</p>
@@ -26,15 +52,15 @@ export default function Experience() {
             <div className="space-y-2.5 text-sm text-white/70">
               <div className="flex items-start gap-2">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
-                <p>Write and perform IC device testing using C++ scripts on Advantest V93000 with SmartTest, including functional validation and non-volatile memory (NVM) programming for production burn-in.</p>
+                <p>Developed and executed C++ test scripts for IC device testing on the Advantest V93000 ATE platform using SmartTest, covering functional validation and non-volatile memory (NVM) programming for production burn-in.</p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
-                <p>Develop and deploy a Python-based STDF-to-Excel conversion tool using pandas, openpyxl, and pystdf to streamline analysis of semiconductor test data.</p>
+                <p>Designed and deployed a Python-based STDF-to-Excel conversion tool using pandas, openpyxl, and pystdf to streamline semiconductor test data analysis and reporting.</p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
-                <p>Collaborated closely with test engineers to troubleshoot logs, refine test workflows, and support QA for production and R&D units.</p>
+                <p>Collaborated with test engineers to troubleshoot test logs, optimize test workflows, and support quality assurance for production and R&D devices.</p>
               </div>
             </div>
           </div>
@@ -52,19 +78,19 @@ export default function Experience() {
             <div className="space-y-2.5 text-sm text-white/70">
               <div className="flex items-start gap-2">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
-                <p>Assembled precision robotic components for the Da Vinci surgical system and Ion robotic platform, ensuring 100% compliance with quality and safety standards.</p>
+                <p>Assembled precision robotic components for the da Vinci surgical system and Ion robotic platform, maintaining compliance with stringent quality and safety standards.</p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
-                <p>Conducted functional testing on 20+ robotic devices per week, reducing defect rates by 15%.</p>
+                <p>Performed functional testing on 20+ robotic devices per week, contributing to a 15% reduction in defect rates.</p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
-                <p>Improved technical documentation & manufacturing workflows, leading to a 10% reduction in errors.</p>
+                <p>Improved technical documentation and manufacturing workflows, contributing to a 10% reduction in errors.</p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
-                <p>Suggested process automation strategies to improve quality assurance and efficiency.</p>
+                <p>Identified process automation opportunities to improve quality assurance and manufacturing efficiency.</p>
               </div>
             </div>
           </div>

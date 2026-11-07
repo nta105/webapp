@@ -1,7 +1,6 @@
 export default function Skills() {
   const languages = ['Python', 'C++', 'JavaScript', 'TypeScript', 'Kotlin', 'SQL']
-  const technologies = ['Claude', 'GitHub Copilot', 'Advantest V93000', 'Eclipse', 'Visual Studio Code', 'Next.js', 'React', 'Node.js', 'Firebase', 'Supabase', 'Tailwind CSS', 'Vercel', 'Git/GitHub', 'Android Studio', 'Tkinter']
-  const databases = ['MySQL', 'PostgreSQL', 'Firestore', 'Supabase']
+  const technologies = ['Advantest V93000', 'Eclipse', 'Visual Studio Code', 'Next.js', 'React', 'Node.js', 'Firebase', 'Supabase', 'Tailwind CSS', 'Vercel', 'Git/GitHub']
 
   return (
     <section id="skills" className="animate-fade-in-up">
@@ -28,16 +27,6 @@ export default function Skills() {
             <div className="flex flex-wrap gap-2">
               {technologies.map((skill) => (
                 <span key={skill} className="px-3 py-1.5 text-sm font-medium bg-indigo-500/10 text-indigo-300 rounded-lg border border-indigo-400/20 hover:bg-indigo-500/20 hover:scale-105 transition-all cursor-default">
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div className="bg-white/5 rounded-xl p-5 border border-white/5">
-            <h3 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-3">Databases</h3>
-            <div className="flex flex-wrap gap-2">
-              {databases.map((skill) => (
-                <span key={skill} className="px-3 py-1.5 text-sm font-medium bg-emerald-500/10 text-emerald-300 rounded-lg border border-emerald-400/20 hover:bg-emerald-500/20 hover:scale-105 transition-all cursor-default">
                   {skill}
                 </span>
               ))}

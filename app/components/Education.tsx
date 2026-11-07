@@ -15,20 +15,40 @@ export default function Education() {
           </div>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
             <p className="text-blue-400 font-medium">Bachelor of Science in Computer Science</p>
-            <p className="text-sm text-white/40">Expected December 2025</p>
+            <p className="text-sm text-white/40">December 2025</p>
           </div>
           <div className="space-y-2.5 text-sm text-white/70">
             <div className="flex items-start gap-2">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
-              <p><span className="font-medium text-white">Honors & Awards:</span> Dean&apos;s List (Fall 2023, Spring 2024, Fall 2024), CS Department Scholarship (2023-2024) | GPA: 3.94/4.0</p>
+              <p><span className="font-medium text-white">GPA:</span> 3.955/4.0 | Dean&apos;s List (Fall 2023, Spring 2024, Fall 2024)</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
-              <p><span className="font-medium text-white">Coursework:</span> Data Structures & Algorithms, Object-Oriented Programming, Software Engineering, Operating Systems, Database Management, Computer Networks, Artificial Intelligence</p>
+              <p><span className="font-medium text-white">Honors:</span> CS Department Scholarship (2023–2024)</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
+              <p><span className="font-medium text-white">Coursework:</span> Data Structures & Algorithms, Object-Oriented Programming, Operating Systems, Computer Networks, Artificial Intelligence; Mathematics: Calculus II, Multivariable Calculus, Linear Algebra, Discrete Mathematics; Physics: General Physics I & II</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
               <p><span className="font-medium text-white">Involvement:</span> Google Developer Student Club – Organized events and collaborated on technical projects.</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white/5 rounded-xl p-5 border border-white/5 mt-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1">
+            <h3 className="text-lg font-semibold text-white">San Jose City College</h3>
+            <span className="text-sm text-white/50 bg-white/5 px-2.5 py-0.5 rounded-full border border-white/10">San Jose, CA</span>
+          </div>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+            <p className="text-blue-400 font-medium">AS-T Mathematics for Transfer (with Honors); AA Liberal Arts (with Honors)</p>
+            <p className="text-sm text-white/40">July 2022</p>
+          </div>
+          <div className="space-y-2.5 text-sm text-white/70">
+            <div className="flex items-start gap-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
+              <p><span className="font-medium text-white">GPA:</span> 3.92/4.0</p>
             </div>
           </div>
         </div>

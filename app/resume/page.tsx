@@ -5,7 +5,6 @@ import Education from '@/app/components/Education'
 import Experience from '@/app/components/Experience'
 import Projects from '@/app/components/Projects'
 import Skills from '@/app/components/Skills'
-import SoftSkills from '@/app/components/SoftSkills'
 import Activities from '@/app/components/Activities'
 
 
@@ -26,7 +25,6 @@ export default function ResumePage() {
           <Projects />
           <Education />
           <Activities />
-          <SoftSkills />
           <Skills />
         </div>
         <footer className="mt-16 text-center text-sm text-white/30 pb-8">

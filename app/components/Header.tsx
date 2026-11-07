@@ -18,7 +18,7 @@ export default function Header() {
           Thien An <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Nguyen</span>
         </h1>
         <p className="text-white/50 text-base max-w-lg mx-auto mb-8">
-          Building scalable software solutions with modern technologies
+          Semiconductor Engineer · Integrated Voltage Regulators & Hardware Qualification
         </p>
         
         {/* Contact info grid */}
@@ -30,10 +30,6 @@ export default function Header() {
           <a href="tel:+14086393430" className="inline-flex items-center gap-1.5 bg-white/5 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all">
             <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
             (408) 639-3430
-          </a>
-          <a href="mailto:tnguyen554@horizon.csueastbay.edu" className="inline-flex items-center gap-1.5 bg-white/5 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all">
-            <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-            tnguyen554@horizon.csueastbay.edu
           </a>
           <a href="mailto:nguyenthienan96@gmail.com" className="inline-flex items-center gap-1.5 bg-white/5 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all">
             <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
