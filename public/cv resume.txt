@@ -7,9 +7,9 @@ Semiconductor Engineer with hands-on experience in integrated voltage regulator 
 EDUCATION
 CALIFORNIA STATE UNIVERSITY, EAST BAY	Hayward, CA
 Bachelor of Science in Computer Science	December 2025
-GPA: 3.955/4.0 | Dean's List (Fall 2023, Spring 2024, Fall 2024)
-Honors: CS Department Scholarship (2023–2024)
-Relevant Coursework: Data Structures & Algorithms, Object-Oriented Programming, Operating Systems, Computer Networks, Artificial Intelligence; Mathematics: Calculus II, Multivariable Calculus, Linear Algebra, Discrete Mathematics; Physics: General Physics I & II
+GPA: 3.955/4.0 | Dean's List (Fall 2023, Spring 2024, Fall 2024, Spring 2025)
+Honors: Summa Cum Laude (December 2025); CS Department Scholarship (2023–2024)
+Relevant Coursework: Data Structures & Algorithms, Object-Oriented Programming, Operating Systems, Computer Networks, Computer Architecture, Machine Learning, Artificial Intelligence; Mathematics: Calculus I, Calculus II, Multivariable Calculus, Linear Algebra, Discrete Mathematics; Physics: General Physics I & II
 Activities: Google Developer Student Club – Organized technical events and collaborated on student projects.
 San Jose City College, San Jose, CA — AS-T Mathematics for Transfer (with Honors) and AA Liberal Arts (with Honors), July 2022; GPA 3.92/4.0
 
@@ -33,10 +33,10 @@ Technician	July 2022 – July 2023
 - Identified process automation opportunities to improve quality assurance and manufacturing efficiency.
 
 PROJECTS
-AI-Powered Video Content Analyser | chat-with-youtubevideo.vercel.app
-- Developed a full-stack Next.js web app that integrates AI-powered chatbots to analyze YouTube videos.
-- Implemented REST APIs & Firebase Authentication for user-specific analysis storage; deployed on Vercel with a scalable serverless architecture.
-Personal Website | thienan.vercel.app — online resume and portfolio.
+Personal Website & Interactive Coding Projects | thienan.vercel.app
+- Designed and developed a personal portfolio website showcasing professional experience, technical background, and independent software projects.
+- Built interactive browser-based applications and games, including Werewolf, The Resistance, Coup: Reformation, and 2048.
+- Implemented application logic, state management, and interactive user interfaces, including multiplayer pass-and-play functionality.
 
 SKILLS
 Programming Languages: Python, C++, JavaScript, TypeScript, Kotlin, SQL

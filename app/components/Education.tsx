@@ -20,15 +20,15 @@ export default function Education() {
           <div className="space-y-2.5 text-sm text-white/70">
             <div className="flex items-start gap-2">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
-              <p><span className="font-medium text-white">GPA:</span> 3.955/4.0 | Dean&apos;s List (Fall 2023, Spring 2024, Fall 2024)</p>
+              <p><span className="font-medium text-white">GPA:</span> 3.955/4.0 | Dean&apos;s List (Fall 2023, Spring 2024, Fall 2024, Spring 2025)</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
-              <p><span className="font-medium text-white">Honors:</span> CS Department Scholarship (2023–2024)</p>
+              <p><span className="font-medium text-white">Honors:</span> Summa Cum Laude (December 2025); CS Department Scholarship (2023–2024)</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>
-              <p><span className="font-medium text-white">Coursework:</span> Data Structures & Algorithms, Object-Oriented Programming, Operating Systems, Computer Networks, Artificial Intelligence; Mathematics: Calculus II, Multivariable Calculus, Linear Algebra, Discrete Mathematics; Physics: General Physics I & II</p>
+              <p><span className="font-medium text-white">Coursework:</span> Data Structures & Algorithms, Object-Oriented Programming, Operating Systems, Computer Networks, Computer Architecture, Machine Learning, Artificial Intelligence; Mathematics: Calculus I, Calculus II, Multivariable Calculus, Linear Algebra, Discrete Mathematics; Physics: General Physics I & II</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0"></span>

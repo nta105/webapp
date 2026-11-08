@@ -15,28 +15,22 @@ export default function Projects() {
           <div className="grid gap-4">
             <div className="bg-white/5 rounded-xl p-5 border border-white/5 hover:bg-white/[0.07] hover:border-blue-400/20 transition-all group">
               <div className="flex items-start justify-between mb-3">
-                <h4 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">AI-Powered Video Content Analyser</h4>
-                <a href="https://chat-with-youtubevideo.vercel.app/" target="_blank" rel="noopener noreferrer" className="shrink-0 ml-3 inline-flex items-center gap-1 text-xs font-medium text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-400/20 hover:bg-blue-500/20 transition-colors">
-                  Live Demo
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                </a>
+                <h4 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">Personal Website & Interactive Coding Projects</h4>
+                <div className="shrink-0 ml-3 flex items-center gap-2">
+                  <a href="https://thienan.vercel.app/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-400/20 hover:bg-blue-500/20 transition-colors">
+                    Portfolio
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                  </a>
+                  <a href="https://thienan.vercel.app/side-projects" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-400/20 hover:bg-blue-500/20 transition-colors">
+                    Side Projects
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                  </a>
+                </div>
               </div>
               <div className="space-y-1.5 text-sm text-white/60">
-                <div className="flex items-start gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0"></span><p>Developed a full-stack Next.js web app that integrates AI-powered chatbots to analyze YouTube videos.</p></div>
-                <div className="flex items-start gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0"></span><p>Implemented REST APIs & Firebase Authentication for user-specific analysis storage; deployed on Vercel with a scalable serverless architecture.</p></div>
-              </div>
-            </div>
-
-            <div className="bg-white/5 rounded-xl p-5 border border-white/5 hover:bg-white/[0.07] hover:border-blue-400/20 transition-all group">
-              <div className="flex items-start justify-between mb-3">
-                <h4 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">Personal Website</h4>
-                <a href="https://thienan.vercel.app/" target="_blank" rel="noopener noreferrer" className="shrink-0 ml-3 inline-flex items-center gap-1 text-xs font-medium text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-400/20 hover:bg-blue-500/20 transition-colors">
-                  Visit
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                </a>
-              </div>
-              <div className="space-y-1.5 text-sm text-white/60">
-                <div className="flex items-start gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0"></span><p>Online resume and portfolio.</p></div>
+                <div className="flex items-start gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0"></span><p>Designed and developed a personal portfolio website showcasing professional experience, technical background, and independent software projects.</p></div>
+                <div className="flex items-start gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0"></span><p>Built interactive browser-based applications and games, including Werewolf, The Resistance, Coup: Reformation, and 2048.</p></div>
+                <div className="flex items-start gap-2"><span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0"></span><p>Implemented application logic, state management, and interactive user interfaces, including multiplayer pass-and-play functionality.</p></div>
               </div>
             </div>
           </div>
@@ -44,4 +38,4 @@ export default function Projects() {
       </div>
     </section>
   )
-} 
+}
