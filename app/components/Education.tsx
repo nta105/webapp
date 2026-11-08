@@ -52,6 +52,16 @@ export default function Education() {
             </div>
           </div>
         </div>
+        <div className="bg-white/5 rounded-xl p-5 border border-white/5 mt-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1">
+            <h3 className="text-lg font-semibold text-white">De Anza College</h3>
+            <span className="text-sm text-white/50 bg-white/5 px-2.5 py-0.5 rounded-full border border-white/10">Cupertino, CA</span>
+          </div>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+            <p className="text-blue-400 font-medium">GPA: 4.00/4.0 | Dean&apos;s List</p>
+            <p className="text-sm text-white/40">Spring 2019</p>
+          </div>
+        </div>
       </div>
     </section>
   )
