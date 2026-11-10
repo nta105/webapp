@@ -2,13 +2,19 @@ export const resources = ['wood', 'brick', 'wool', 'grain', 'ore'] as const
 export type Resource = typeof resources[number]
 export type Hand = Record<Resource, number>
 export type Development = 'knight' | 'victory' | 'roads' | 'plenty' | 'monopoly'
+export type CatanVersion = 'classic' | 'seafarers'
+export type RouteKind = 'road' | 'ship'
 export type Phase = 'setupSettlement' | 'setupRoad' | 'roll' | 'turn' | 'discard' | 'robber' | 'steal' | 'trade' | 'roads' | 'ended'
-export interface Tile { id: number; x: number; y: number; resource: Resource | null; number: number | null; nodes: number[] }
+export interface Tile { id: number; x: number; y: number; resource: Resource | null; number: number | null; nodes: number[]; sea?: boolean; island?: number }
 export interface Vertex { id: number; x: number; y: number; tiles: number[]; edges: number[]; owner: number | null; city: boolean; port: Resource | 'any' | null }
-export interface Edge { id: number; a: number; b: number; owner: number | null }
+export interface Edge { id: number; a: number; b: number; owner: number | null; kind?: RouteKind; builtOn?: number }
 export interface Board { tiles: Tile[]; nodes: Vertex[]; edges: Edge[] }
 export interface Player { id: number; name: string; hand: Hand; cards: { id: number; type: Development; boughtOn: number }[]; knights: number }
 export interface Game {
+  version: CatanVersion
+  targetPoints: number
+  pirate: number | null
+  movedShip: boolean
   board: Board
   players: Player[]
   bank: Hand
@@ -34,10 +40,11 @@ export interface Game {
 }
 export type Action =
   | { type: 'settlement' | 'city'; node: number }
-  | { type: 'road'; edge: number }
+  | { type: 'road' | 'ship'; edge: number }
+  | { type: 'moveShip'; from: number; to: number }
   | { type: 'roll' | 'end' | 'buy' | 'finishRoads' }
   | { type: 'discard'; hand: Hand }
-  | { type: 'robber'; tile: number }
+  | { type: 'robber' | 'pirate'; tile: number }
   | { type: 'steal'; player: number }
   | { type: 'bank'; give: Resource; receive: Resource }
   | { type: 'offer'; target: number; give: Hand; receive: Hand }
@@ -46,8 +53,9 @@ export type Action =
 
 export const emptyHand = (): Hand => ({ wood: 0, brick: 0, wool: 0, grain: 0, ore: 0 })
 export const handSize = (hand: Hand) => resources.reduce((sum, resource) => sum + hand[resource], 0)
-export const costs: Record<'road' | 'settlement' | 'city' | 'development', Hand> = {
+export const costs: Record<RouteKind | 'settlement' | 'city' | 'development', Hand> = {
   road: { ...emptyHand(), wood: 1, brick: 1 },
+  ship: { ...emptyHand(), wood: 1, wool: 1 },
   settlement: { wood: 1, brick: 1, wool: 1, grain: 1, ore: 0 },
   city: { ...emptyHand(), grain: 2, ore: 3 },
   development: { ...emptyHand(), wool: 1, grain: 1, ore: 1 },
@@ -147,14 +155,63 @@ export function createBoard(large: boolean, random = Math.random): Board {
   return board
 }
 
-export function createCatan(names: string[], friendlyRobber = true, random = Math.random): Game {
+export function createSeafarersBoard(random = Math.random): Board {
+  const board = createBoard(false, random)
+  board.tiles.forEach(tile => { tile.island = 0 })
+  const offshoreTerrain = shuffle([...resources, 'wood'] as Resource[], random)
+  const offshoreNumbers = shuffle([3, 4, 5, 9, 10, 11], random)
+  const islandCoordinates = [[4, 0], [0, 4], [-4, 4], [-4, 0], [0, -4], [4, -4]]
+  // Extend the existing graph, preserving the mainland's balanced tokens and ports.
+  const vertices = new Map(board.nodes.map(node => [`${Math.round(node.x * 10000)},${Math.round(node.y * 10000)}`, node.id]))
+  const edges = new Set(board.edges.map(edge => [edge.a, edge.b].sort((a, b) => a - b).join(',')))
+  for (let r = -4; r <= 4; r++) for (let q = -4; q <= 4; q++) {
+    const radius = Math.max(Math.abs(q), Math.abs(r), Math.abs(q + r))
+    if (radius <= 2 || radius > 4) continue
+    const island = islandCoordinates.findIndex(([iq, ir]) => iq === q && ir === r)
+    const id = board.tiles.length
+    const x = Math.sqrt(3) * (q + r / 2)
+    const y = 1.5 * r
+    const nodes = Array.from({ length: 6 }, (_, corner) => {
+      const angle = (corner * 60 - 30) * Math.PI / 180
+      const nx = x + Math.cos(angle); const ny = y + Math.sin(angle)
+      const key = `${Math.round(nx * 10000)},${Math.round(ny * 10000)}`
+      let node = vertices.get(key)
+      if (node === undefined) {
+        node = board.nodes.length
+        vertices.set(key, node)
+        board.nodes.push({ id: node, x: nx, y: ny, tiles: [], edges: [], owner: null, city: false, port: null })
+      }
+      board.nodes[node].tiles.push(id)
+      return node
+    })
+    nodes.forEach((a, index) => {
+      const b = nodes[(index + 1) % 6]
+      const key = [a, b].sort((left, right) => left - right).join(',')
+      if (edges.has(key)) return
+      edges.add(key)
+      const edge = board.edges.length
+      board.edges.push({ id: edge, a, b, owner: null })
+      board.nodes[a].edges.push(edge)
+      board.nodes[b].edges.push(edge)
+    })
+    board.tiles.push({ id, x, y, nodes, sea: island < 0, island: island < 0 ? undefined : island + 1,
+      resource: island < 0 ? null : offshoreTerrain[island], number: island < 0 ? null : offshoreNumbers[island] })
+  }
+  return board
+}
+
+export function createCatan(names: string[], friendlyRobber = true, random = Math.random, version: CatanVersion = 'classic'): Game {
   requireRule(names.length >= 3 && names.length <= 6, 'Choose 3 to 6 players.')
+  requireRule(version === 'classic' || version === 'seafarers', 'Choose a supported Catan version.')
+  requireRule(version !== 'seafarers' || names.length <= 4, 'Seafarers supports 3 or 4 players.')
   const clean = names.map(name => name.trim())
   requireRule(clean.every(name => name.length > 0 && name.length <= 24) && new Set(clean.map(name => name.toLowerCase())).size === clean.length, 'Use unique names of 1–24 characters.')
   const large = clean.length > 4
-  const board = createBoard(large, random)
+  const board = version === 'seafarers' ? createSeafarersBoard(random) : createBoard(large, random)
   const cardCounts: [Development, number][] = [['knight', large ? 20 : 14], ['victory', 5], ['roads', large ? 3 : 2], ['plenty', large ? 3 : 2], ['monopoly', large ? 3 : 2]]
   return {
+    version, targetPoints: version === 'seafarers' ? 13 : 10,
+    pirate: version === 'seafarers' ? board.tiles.find(tile => tile.sea)!.id : null, movedShip: false,
     board, players: clean.map((name, id) => ({ id, name, hand: emptyHand(), cards: [], knights: 0 })),
     bank: Object.fromEntries(resources.map(resource => [resource, large ? 24 : 19])) as Hand,
     deck: shuffle(cardCounts.flatMap(([type, count]) => Array<Development>(count).fill(type)), random),
@@ -166,41 +223,82 @@ export function createCatan(names: string[], friendlyRobber = true, random = Mat
 }
 
 const otherEnd = (edge: Edge, node: number) => edge.a === node ? edge.b : edge.a
+const routeKind = (edge: Edge): RouteKind => edge.kind ?? 'road'
+export function shipCount(game: Game, player: number) {
+  return game.board.edges.filter(edge => edge.owner === player && routeKind(edge) === 'ship').length
+}
 export function pieceCount(game: Game, player: number) {
   const owned = game.board.nodes.filter(node => node.owner === player)
-  return { settlements: owned.filter(node => !node.city).length, cities: owned.filter(node => node.city).length, roads: game.board.edges.filter(edge => edge.owner === player).length }
+  return { settlements: owned.filter(node => !node.city).length, cities: owned.filter(node => node.city).length, roads: game.board.edges.filter(edge => edge.owner === player && routeKind(edge) === 'road').length }
+}
+export function islandBonus(game: Game, player: number): number {
+  if (game.version !== 'seafarers') return 0
+  const islands = game.board.nodes.filter(node => node.owner === player).flatMap(node => node.tiles.map(id => game.board.tiles[id].island))
+  return new Set(islands.filter(id => id !== undefined && id !== 0)).size * 2
 }
 export function publicPoints(game: Game, player: number): number {
   return game.board.nodes.reduce((points, node) => points + (node.owner === player ? node.city ? 2 : 1 : 0), 0)
-    + (game.longest === player ? 2 : 0) + (game.army === player ? 2 : 0)
+    + (game.longest === player ? 2 : 0) + (game.army === player ? 2 : 0) + islandBonus(game, player)
 }
 export const totalPoints = (game: Game, player: number) => publicPoints(game, player) + game.players[player].cards.filter(card => card.type === 'victory').length
 export function canAfford(hand: Hand, cost: Hand) { return resources.every(resource => hand[resource] >= cost[resource]) }
 export function canSettle(game: Game, nodeId: number): boolean {
   const node = game.board.nodes[nodeId]
   if (!node || node.owner !== null || pieceCount(game, game.current).settlements >= 5) return false
+  if (!node.tiles.some(id => !game.board.tiles[id].sea)) return false
+  if (game.version === 'seafarers' && game.phase === 'setupSettlement' && !node.tiles.some(id => game.board.tiles[id].island === 0)) return false
   if (node.edges.some(id => game.board.nodes[otherEnd(game.board.edges[id], nodeId)].owner !== null)) return false
   return game.phase === 'setupSettlement' || node.edges.some(id => game.board.edges[id].owner === game.current)
 }
 export function canRoad(game: Game, edgeId: number): boolean {
+  return canRoute(game, edgeId, 'road')
+}
+const edgeTiles = (board: Board, edge: Edge) => board.nodes[edge.a].tiles.filter(id => board.nodes[edge.b].tiles.includes(id))
+function pirateBlocks(game: Game, edge: Edge) { return game.pirate !== null && edgeTiles(game.board, edge).includes(game.pirate) }
+export function canShip(game: Game, edgeId: number): boolean {
+  return canRoute(game, edgeId, 'ship')
+}
+function canRoute(game: Game, edgeId: number, kind: RouteKind): boolean {
   const edge = game.board.edges[edgeId]
-  if (!edge || edge.owner !== null || pieceCount(game, game.current).roads >= 15) return false
+  if (!edge || edge.owner !== null) return false
+  const tiles = edgeTiles(game.board, edge).map(id => game.board.tiles[id])
+  if (kind === 'road' && (pieceCount(game, game.current).roads >= 15 || !tiles.some(tile => !tile.sea))) return false
+  if (kind === 'ship' && (game.version !== 'seafarers' || shipCount(game, game.current) >= 15 || !tiles.some(tile => tile.sea) || pirateBlocks(game, edge))) return false
   if (game.phase === 'setupRoad') return edge.a === game.anchor || edge.b === game.anchor
   return [edge.a, edge.b].some(id => {
     const node = game.board.nodes[id]
-    return node.owner === game.current || (node.owner === null && node.edges.some(road => game.board.edges[road].owner === game.current))
+    return node.owner === game.current || (node.owner === null && node.edges.some(id => {
+      const route = game.board.edges[id]
+      return route.owner === game.current && routeKind(route) === kind
+    }))
   })
+}
+export function canRelocateShip(game: Game, edgeId: number): boolean {
+  const edge = game.board.edges[edgeId]
+  if (game.version !== 'seafarers' || game.phase !== 'turn' || game.movedShip || !edge || edge.owner !== game.current
+    || routeKind(edge) !== 'ship' || edge.builtOn === game.turn || pirateBlocks(game, edge)) return false
+  return [edge.a, edge.b].some(id => {
+    const node = game.board.nodes[id]
+    return node.owner === null && !node.edges.some(other => other !== edgeId && game.board.edges[other].owner === game.current && routeKind(game.board.edges[other]) === 'ship')
+  })
+}
+export function canMoveShipTo(game: Game, from: number, to: number): boolean {
+  if (from === to || !canRelocateShip(game, from)) return false
+  const copy = structuredClone(game)
+  copy.board.edges[from].owner = null
+  return canShip(copy, to)
 }
 export function longestRoad(game: Game, player: number): number {
   const roads = game.board.edges.filter(edge => edge.owner === player)
-  const visit = (node: number, used: Set<number>): number => {
+  const visit = (node: number, used: Set<number>, previousKind?: RouteKind): number => {
     if (used.size && game.board.nodes[node].owner !== null && game.board.nodes[node].owner !== player) return 0
     let best = 0
     for (const edgeId of game.board.nodes[node].edges) {
       const edge = game.board.edges[edgeId]
       if (edge.owner !== player || used.has(edgeId)) continue
+      if (previousKind && routeKind(edge) !== previousKind && game.board.nodes[node].owner !== player) continue
       used.add(edgeId)
-      best = Math.max(best, 1 + visit(otherEnd(edge, node), used))
+      best = Math.max(best, 1 + visit(otherEnd(edge, node), used, routeKind(edge)))
       used.delete(edgeId)
     }
     return best
@@ -217,7 +315,7 @@ function awardHolder(values: number[], minimum: number, holder: number | null): 
 function score(game: Game) {
   game.longest = awardHolder(game.players.map(player => longestRoad(game, player.id)), 5, game.longest)
   game.army = awardHolder(game.players.map(player => player.knights), 3, game.army)
-  if (!game.phase.startsWith('setup') && totalPoints(game, game.current) >= 10) {
+  if (!game.phase.startsWith('setup') && totalPoints(game, game.current) >= game.targetPoints) {
     game.winner = game.current
     game.phase = 'ended'
     message(game, `${game.players[game.current].name} wins with ${totalPoints(game, game.current)} points!`)
@@ -243,10 +341,16 @@ export function bankRate(game: Game, player: number, resource: Resource): number
 }
 export function canMoveRobber(game: Game, tileId: number): boolean {
   const tile = game.board.tiles[tileId]
-  return !!tile && tileId !== game.robber && (!game.friendlyRobber || tile.nodes.every(id => {
+  return !!tile && !tile.sea && tileId !== game.robber && (!game.friendlyRobber || tile.nodes.every(id => {
     const owner = game.board.nodes[id].owner
     return owner === null || publicPoints(game, owner) > 2
   }))
+}
+export function canMovePirate(game: Game, tileId: number): boolean {
+  return game.version === 'seafarers' && !!game.board.tiles[tileId]?.sea && tileId !== game.pirate
+}
+export function hasFreeRoute(game: Game): boolean {
+  return game.board.edges.some(edge => canRoad(game, edge.id) || canShip(game, edge.id))
 }
 function distribute(game: Game, number: number) {
   const demand = game.players.map(() => emptyHand())
@@ -294,12 +398,16 @@ export function advanceCatan(previous: Game, action: Action, random = Math.rando
       message(game, `${player.name} built a settlement.`)
       break
     }
-    case 'road': {
+    case 'road':
+    case 'ship': {
       requirePhase('setupRoad', 'turn', 'roads')
-      requireRule(canRoad(game, action.edge), 'Choose a connected empty road without building through another player.')
+      requireRule(action.type === 'ship' ? canShip(game, action.edge) : canRoad(game, action.edge),
+        action.type === 'ship' ? 'Choose a connected sea or coastal edge, away from the pirate. Roads and ships connect only at your buildings.' : 'Choose a connected empty road without building through another player.')
       const setup = game.phase === 'setupRoad'
-      if (!setup && game.phase !== 'roads') pay(game, costs.road)
+      if (!setup && game.phase !== 'roads') pay(game, costs[action.type])
       game.board.edges[action.edge].owner = game.current
+      game.board.edges[action.edge].kind = action.type
+      game.board.edges[action.edge].builtOn = game.turn
       if (setup) {
         game.setupStep++
         game.anchor = null
@@ -313,12 +421,22 @@ export function advanceCatan(previous: Game, action: Action, random = Math.rando
           game.phase = 'setupSettlement'
         }
       } else {
-        message(game, `${player.name} built a road.`)
+        message(game, action.type === 'ship' ? `${player.name} built a ship.` : `${player.name} built a road.`)
         if (game.phase === 'roads') {
           game.freeRoads--
-          if (!game.freeRoads || !game.board.edges.some(edge => canRoad(game, edge.id))) game.phase = game.resume
+          if (!game.freeRoads || !hasFreeRoute(game)) game.phase = game.resume
         }
       }
+      break
+    }
+    case 'moveShip': {
+      requirePhase('turn')
+      requireRule(canMoveShipTo(game, action.from, action.to), 'Move one older open-ended ship per turn to a connected sea edge, away from the pirate.')
+      game.board.edges[action.from].owner = null
+      const target = game.board.edges[action.to]
+      target.owner = game.current; target.kind = 'ship'; target.builtOn = game.turn
+      game.movedShip = true
+      message(game, `${player.name} relocated a ship.`)
       break
     }
     case 'city': {
@@ -353,14 +471,20 @@ export function advanceCatan(previous: Game, action: Action, random = Math.rando
       if (!game.discards.length) game.phase = 'robber'
       break
     }
-    case 'robber': {
+    case 'robber':
+    case 'pirate': {
       requirePhase('robber')
-      requireRule(canMoveRobber(game, action.tile), 'Move to another tile. Friendly robber protects players with 2 or fewer public points.')
-      game.robber = action.tile
-      const owners = game.board.tiles[action.tile].nodes.map(id => game.board.nodes[id].owner)
+      const pirate = action.type === 'pirate'
+      requireRule(pirate ? canMovePirate(game, action.tile) : canMoveRobber(game, action.tile),
+        pirate ? 'Move the pirate to a different sea tile.' : 'Move to another tile. Friendly robber protects players with 2 or fewer public points.')
+      if (pirate) game.pirate = action.tile
+      else game.robber = action.tile
+      const owners = pirate
+        ? game.board.edges.filter(edge => routeKind(edge) === 'ship' && edgeTiles(game.board, edge).includes(action.tile)).map(edge => edge.owner)
+        : game.board.tiles[action.tile].nodes.map(id => game.board.nodes[id].owner)
       game.victims = [...new Set(owners)].filter((id): id is number => id !== null && id !== game.current && handSize(game.players[id].hand) > 0)
       game.phase = game.victims.length ? 'steal' : game.resume
-      message(game, `${player.name} moved the robber.`)
+      message(game, pirate ? `${player.name} moved the pirate.` : `${player.name} moved the robber.`)
       break
     }
     case 'steal': {
@@ -435,8 +559,8 @@ export function advanceCatan(previous: Game, action: Action, random = Math.rando
         player.knights++
         game.phase = 'robber'
       } else if (card.type === 'roads') {
-        requireRule(game.board.edges.some(edge => canRoad(game, edge.id)), 'No legal roads remain.')
-        game.freeRoads = Math.min(2, 15 - pieceCount(game, game.current).roads)
+        requireRule(hasFreeRoute(game), 'No legal roads or ships remain.')
+        game.freeRoads = Math.min(2, 15 - pieceCount(game, game.current).roads + (game.version === 'seafarers' ? 15 - shipCount(game, game.current) : 0))
         game.phase = 'roads'
       } else if (card.type === 'plenty') {
         requireRule(choices.length === 2 && choices.every(resource => resources.includes(resource)), 'Choose exactly two resources.')
@@ -456,7 +580,7 @@ export function advanceCatan(previous: Game, action: Action, random = Math.rando
     }
     case 'finishRoads':
       requirePhase('roads')
-      requireRule(!game.board.edges.some(edge => canRoad(game, edge.id)), 'Place the remaining free roads if a legal placement exists.')
+      requireRule(!hasFreeRoute(game), 'Place the remaining free roads if a legal placement exists.')
       game.phase = game.resume
       break
     case 'end':
@@ -467,6 +591,7 @@ export function advanceCatan(previous: Game, action: Action, random = Math.rando
       game.turn++
       game.phase = 'roll'
       game.playedCard = false
+      game.movedShip = false
       game.dice = null
       message(game, `${game.players[game.current].name}'s turn.`)
       break

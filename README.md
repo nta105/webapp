@@ -12,7 +12,31 @@ A modern, responsive resume built with Next.js, TypeScript, and Tailwind CSS.
 - Contact form honeypot and FormSubmit spam verification
 - Built with Next.js 16
 
-## Catan · Enhanced Classic
+## Catan · Enhanced Classic & Seafarers
+
+The **Game version** selector offers two independent rulesets. Enhanced Classic
+remains the default with all existing 3–6-player settings. **Seafarers: Outer
+Islands** supports 3–4 players on an original, fully visible scenario: the
+19-hex mainland, six resource islands and 36 sea hexes. This is a custom
+scenario, not an official Seafarers map or a complete scenario collection.
+It has no gold fields or fog/exploration tiles.
+
+Seafarers starts both settlements on the mainland. At a coastal setup
+settlement choose a free road or ship. Ships cost one wood and one wool, have
+a separate 15-piece limit, and use sea/coastal edges. Roads and ships connect
+only at your own settlement/city. After rolling, move at most one older ship
+from an open end to a legal connected destination per turn; newly placed ships,
+closed routes, and ships beside the pirate cannot move. Road Building grants
+any combination of two roads and ships, subject to inventory and legality.
+
+On a seven or Knight choose either the land robber or sea pirate. The pirate
+blocks adjacent ship building/movement and allows theft from an opponent's
+adjacent ship, but does not block production or interrupt route scoring.
+Friendly robber protection applies to land only. Longest Trade Route combines
+roads and ships (changing type at owned buildings only); its award still needs
+five edges and gives two points. The first settlement on each offshore island
+gives each player two bonus points once for that island. Seafarers wins at
+**13 points on your own turn**, rather than Classic's 10.
 
 Use the **English / Tiếng Việt** switch in the Catan header before or during a
 match. It translates controls, rules, resource/card labels, errors and existing
@@ -42,8 +66,8 @@ that protects tiles bordering anyone with 2 or fewer public points.
 5–6 use 30 hexes, 24 resources of each type and 34 development cards.
 The larger mode deliberately uses ordinary clockwise turns with **no special
 building phase**. This configuration is a house variant, not the official
-5–6-player extension. Standard mode, seafaring and other editions are not
-implemented in this first release.
+5–6-player extension. Other Seafarers scenarios, its 5–6-player extension,
+Standard mode and Cities & Knights are not implemented.
 
 The board, resource totals and journal are public. Hands and development
 cards require a private reveal after a player handoff; switching windows or
@@ -52,7 +76,7 @@ all state is in client memory. Reloading, leaving the route or starting a new
 table discards the match; there is no autosave or resume.
 
 Run `npm run test:catan` using Node.js 22.14 or newer. Validate integration with
-`npx tsc --noEmit`, `npx eslint app/side-projects/catan lib/catan-rules.ts
+`npx tsc --noEmit`, `npx eslint app/side-projects/catan lib/catan-i18n.ts lib/catan-rules.ts
 lib/catan-rules.test.mjs app/side-projects/page.tsx`, and `npm run build`.
 
 ## Werewolf host tool
