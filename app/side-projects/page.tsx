@@ -28,6 +28,12 @@ export default function SideProjects() {
       tags: ['Board Game', 'Bluffing', 'Pass-and-Play'],
     },
     {
+      title: 'Catan · Enhanced Classic',
+      description: 'An original-art island table for 3–6 players. Collect resources, negotiate trades, build settlements and race to 10 points in local pass-and-play.',
+      href: '/side-projects/catan',
+      tags: ['Board Game', 'Strategy', 'Pass-and-Play'],
+    },
+    {
       title: '🎮 2048 — Puzzle Game',
       description: 'The classic 2048 sliding puzzle game, ported from my Android app. Swipe or use arrow keys to merge tiles and reach 2048!',
       href: '/side-projects/game2048',

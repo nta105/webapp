@@ -9,6 +9,7 @@
     "test:werewolf": "node --experimental-strip-types --test lib/werewolf-rules.test.mjs",
     "test:avalon": "node --experimental-strip-types --test lib/avalon-rules.test.mjs",
     "test:coup": "node --experimental-strip-types --test lib/coup-rules.test.mjs",
+    "test:catan": "node --experimental-strip-types --test lib/catan-rules.test.mjs",
     "lint": "eslint ."
   },
   "dependencies": {

@@ -12,6 +12,49 @@ A modern, responsive resume built with Next.js, TypeScript, and Tailwind CSS.
 - Contact form honeypot and FormSubmit spam verification
 - Built with Next.js 16
 
+## Catan · Enhanced Classic
+
+Use the **English / Tiếng Việt** switch in the Catan header before or during a
+match. It translates controls, rules, resource/card labels, errors and existing
+journal entries without resetting the board, names, private-hand state or turn.
+Vietnamese text uses self-hosted Be Vietnam Pro, including headings and form
+controls, with extra heading line height for stacked accent marks.
+
+Open `/side-projects/catan` (also linked from Side Projects). This is an
+unofficial, original-art, local pass-and-play implementation for 3–6 humans,
+not an online room or an AI game. Choose names in clockwise order; Player 1
+starts. Setup uses two settlement/road placements in snake order, with
+starting resources from the second settlement. The board supports mouse,
+touch and keyboard selection. Use Enlarge for a scrollable larger board.
+
+Implemented: dice production, finite resource bank and shortage rules,
+settlements/cities/roads with piece limits, player trades with a private
+accept/decline handoff, bank and coastal port trades, robber movement,
+seven-triggered discards, random theft, all five development-card types,
+Longest Road (including branches, loops and opposing-building interruptions),
+Largest Army, hidden victory points and current-player victory at 10 points.
+Action development cards cannot be played on their purchase turn; at most
+one may be played each turn, including before rolling.
+
+Enhanced mode has nonadjacent 6/8 tokens and an optional friendly robber
+that protects tiles bordering anyone with 2 or fewer public points.
+3–4 players use 19 hexes, 19 resources of each type and 25 development cards.
+5–6 use 30 hexes, 24 resources of each type and 34 development cards.
+The larger mode deliberately uses ordinary clockwise turns with **no special
+building phase**. This configuration is a house variant, not the official
+5–6-player extension. Standard mode, seafaring and other editions are not
+implemented in this first release.
+
+The board, resource totals and journal are public. Hands and development
+cards require a private reveal after a player handoff; switching windows or
+tabs hides them. This is a trusted-player privacy screen, not authentication:
+all state is in client memory. Reloading, leaving the route or starting a new
+table discards the match; there is no autosave or resume.
+
+Run `npm run test:catan` using Node.js 22.14 or newer. Validate integration with
+`npx tsc --noEmit`, `npx eslint app/side-projects/catan lib/catan-rules.ts
+lib/catan-rules.test.mjs app/side-projects/page.tsx`, and `npm run build`.
+
 ## Werewolf host tool
 
 Open `/side-projects/werewolf`. Enter 2-60 unique player names in clockwise
