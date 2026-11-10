@@ -28,8 +28,8 @@ export default function SideProjects() {
       tags: ['Board Game', 'Bluffing', 'Pass-and-Play'],
     },
     {
-      title: 'Catan · Classic & Seafarers',
-      description: 'Choose Enhanced Classic for 3–6 players or Seafarers: Outer Islands for 3–4. Trade, build, sail and settle in bilingual local pass-and-play.',
+      title: 'Catan · Classic, Seafarers & Cities',
+      description: 'Choose Enhanced Classic, Seafarers: Outer Islands or custom Cities & Knights. Three bilingual, local pass-and-play modes for 3–6 players.',
       href: '/side-projects/catan',
       tags: ['Board Game', 'Strategy', 'Pass-and-Play'],
     },

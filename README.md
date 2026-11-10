@@ -12,14 +12,28 @@ A modern, responsive resume built with Next.js, TypeScript, and Tailwind CSS.
 - Contact form honeypot and FormSubmit spam verification
 - Built with Next.js 16
 
-## Catan · Enhanced Classic & Seafarers
+## Catan · Enhanced Classic, Seafarers & Cities and Knights
 
-The **Game version** selector offers two independent rulesets. Enhanced Classic
+The **Game version** selector offers three independent rulesets. Enhanced Classic
 remains the default with all existing 3–6-player settings. **Seafarers: Outer
-Islands** supports 3–4 players on an original, fully visible scenario: the
+Islands** supports 3–6 players on an original, fully visible scenario. For 3–4:
 19-hex mainland, six resource islands and 36 sea hexes. This is a custom
 scenario, not an official Seafarers map or a complete scenario collection.
 It has no gold fields or fog/exploration tiles.
+For 5–6 players the map expands to a 30-hex mainland, six offshore resource
+islands and 55 sea hexes (91 total). The bank has 24 of each resource and the
+development deck has 34 cards. The 13-point goal and individual piece limits
+are unchanged. Turns remain clockwise with no special building phase; this
+is a custom expanded scenario, not the official 5–6-player extension.
+
+Every new match shuffles resource terrain and number tokens separately in
+all three versions and both board sizes; numbers are not permanently tied to a
+resource type. Seafarers also independently shuffles offshore resources and
+their number tokens. Token/resource counts are preserved, sea/desert tiles
+have no production number, and 6/8 tiles cannot be adjacent. Island outlines
+stay scenario-defined; the lobby board is an illustrative preview, not the
+next match's layout. Randomization varies strategy but does not guarantee
+equal starting positions or mathematically unique layouts forever.
 
 Seafarers starts both settlements on the mainland. At a coastal setup
 settlement choose a free road or ship. Ships cost one wood and one wool, have
@@ -47,11 +61,11 @@ controls, with extra heading line height for stacked accent marks.
 Open `/side-projects/catan` (also linked from Side Projects). This is an
 unofficial, original-art, local pass-and-play implementation for 3–6 humans,
 not an online room or an AI game. Choose names in clockwise order; Player 1
-starts. Setup uses two settlement/road placements in snake order, with
+starts. Classic and Seafarers use two settlement/road placements in snake order, with
 starting resources from the second settlement. The board supports mouse,
 touch and keyboard selection. Use Enlarge for a scrollable larger board.
 
-Implemented: dice production, finite resource bank and shortage rules,
+Classic and Seafarers include dice production, finite resource bank and shortage rules,
 settlements/cities/roads with piece limits, player trades with a private
 accept/decline handoff, bank and coastal port trades, robber movement,
 seven-triggered discards, random theft, all five development-card types,
@@ -66,8 +80,64 @@ that protects tiles bordering anyone with 2 or fewer public points.
 5–6 use 30 hexes, 24 resources of each type and 34 development cards.
 The larger mode deliberately uses ordinary clockwise turns with **no special
 building phase**. This configuration is a house variant, not the official
-5–6-player extension. Other Seafarers scenarios, its 5–6-player extension,
-Standard mode and Cities & Knights are not implemented.
+5–6-player extension. Other Seafarers scenarios, the official extension rules,
+Standard mode and the complete official Cities & Knights expansion are not implemented.
+
+### Cities & Knights · custom 3–6-player variant
+
+Select **Cities & Knights · Custom** in the same version menu. This separate
+mode preserves Classic and Seafarers; it cannot be combined with Seafarers.
+It uses the randomized Classic island (19 hexes for 3–4, 30 for 5–6), ordinary
+clockwise turns, a 13-point goal and no special building phase. It is not a
+complete official expansion or official 5–6-player extension.
+
+Snake setup gives each player one settlement/road, then one city/road. The
+second placement grants one basic resource per neighboring productive hex.
+Cities produce one resource plus one commodity on wood/paper, wool/cloth and
+ore/coin; brick and grain cities still produce two resources. Commodity banks
+have 19 of each type (24 for 5–6); shortages follow the resource-bank rule.
+Discards and robber theft include resources and commodities, never progress cards.
+
+Science, Trade and Politics cost 1, 2, 3, 4, then 5 paper, cloth or coin.
+A city is required. Level three unlocks aqueduct (one basic resource when a
+non-seven roll produces nothing for you), 2:1 commodity trading, or mighty
+knights respectively. Level four claims a metropolis on an eligible city;
+another player must strictly exceed the holder's level to take it. A metropolis
+adds two points and cannot be lost to barbarians; one per city.
+
+Recruit a basic knight beside your road for one ore + wool. Activate for grain;
+promote for ore + wool, once per knight per turn, with two pieces per strength.
+Mighty knights require Politics three. Active knights defend immediately but
+cannot move, displace weaker knights or drive a neighboring robber until your
+next turn. Movement follows your roads and cannot pass through buildings or
+other knights. A displaced knight retreats along its owner's roads, or leaves
+the board if trapped. Opposing knights interrupt road connectivity and scoring.
+Walls cost two brick, maximum three, and each adds two to the seven-card safe
+goods limit. A lost city also loses its wall; if all five settlement pieces are
+already on the board, remove the city instead of adding a sixth settlement.
+
+The event die has three barbarian faces and one face per improvement track.
+Colored events award progress to players with a positive matching level when
+the first (red) resource die is at most that level + one. Seven barbarian
+advances trigger an attack. **Custom ordering:** resolve production and any
+seven discards/robber first, then the attack, aqueduct and excess progress.
+The robber cannot move until after the first attack, but sevens still discard.
+Active knight strength must meet the total city count, including metropolises.
+A unique strongest defender gains one point; tied leaders choose progress.
+If defense fails, the weakest defenders among players with vulnerable cities
+each downgrade one city. All knights deactivate after every attack.
+
+The deliberately small **custom progress collection has six types**, not the
+official expansion's full deck: Supply (two selected basic resources), Engineer
+(free wall), Trade fleet (selected resource 2:1 until your next turn), Resource
+monopoly (up to two selected resources from each opponent), Mobilization
+(activate all inactive knights free), and Bishop (robber move/theft after the
+first attack). Three 12-card decks each contain six copies of their two types;
+played/returned cards recycle when their deck empties. Keep at most four;
+play any number after rolling, including immediately after drawing.
+There is no merchant, classic development deck or Largest Army. Longest Road
+still awards two points. Commodities and progress hands use private handoffs;
+improvement levels, knights, event/defense status and points remain public.
 
 The board, resource totals and journal are public. Hands and development
 cards require a private reveal after a player handoff; switching windows or
@@ -76,7 +146,7 @@ all state is in client memory. Reloading, leaving the route or starting a new
 table discards the match; there is no autosave or resume.
 
 Run `npm run test:catan` using Node.js 22.14 or newer. Validate integration with
-`npx tsc --noEmit`, `npx eslint app/side-projects/catan lib/catan-i18n.ts lib/catan-rules.ts
+`npx tsc --noEmit`, `npx eslint app/side-projects/catan lib/catan-i18n.ts lib/catan-cities.ts lib/catan-rules.ts
 lib/catan-rules.test.mjs app/side-projects/page.tsx`, and `npm run build`.
 
 ## Werewolf host tool
